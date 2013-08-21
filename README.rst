@@ -60,6 +60,7 @@ List of extensions
 - httpdomain: a domain for documenting RESTful HTTP APIs.
 - hyphenator: client-side hyphenation of HTML using hyphenator_
 - lilypond: an extension inserting music scripts from Lilypond_ in PNG format.
+- matlabdomain: document MATLAB_ code.
 - mockautodoc: mock imports.
 - mscgen: embed mscgen-formatted MSC (Message Sequence Chart)s.
 - napoleon: supports `Google style`_ and `NumPy style`_ docstrings.
@@ -140,6 +141,8 @@ List of extensions
 .. _slideshare: http://www.slideshare.net/
 
 .. _TikZ/PGF LaTeX package: http://sourceforge.net/projects/pgf/
+
+.. _MATLAB: http://www.mathworks.com/products/matlab/
 
 For contributors
 ================
