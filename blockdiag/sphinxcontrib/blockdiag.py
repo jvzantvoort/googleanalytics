@@ -10,38 +10,33 @@
     :license: BSDL.
 """
 
-import posixpath
-import re
+import io
 import os
-import codecs
+import re
+import posixpath
 import traceback
+from collections import namedtuple
 try:
     from hashlib import sha1 as sha
 except ImportError:
     from sha import sha
 
 from docutils import nodes
-from docutils.parsers.rst import directives
-
 from sphinx.errors import SphinxError
-from sphinx.util.osutil import ensuredir, ENOENT, EPIPE
-from sphinx.util.compat import Directive
+from sphinx.util.osutil import ensuredir
 
-from blockdiag_sphinxhelper import command, parser, builder, drawer
-from blockdiag_sphinxhelper import collections, FontMap
-from blockdiag_sphinxhelper import blockdiag, BlockdiagDirective
-namedtuple = collections.namedtuple
+import blockdiag_sphinxhelper as blockdiag
 
 
 class BlockdiagError(SphinxError):
     category = 'Blockdiag error'
 
 
-class Blockdiag(BlockdiagDirective):
+class Blockdiag(blockdiag.utils.rst.directives.BlockdiagDirective):
     def run(self):
         try:
             return super(Blockdiag, self).run()
-        except parser.ParseException, e:
+        except blockdiag.core.parser.ParseException, e:
             if self.content:
                 msg = '[%s] ParseError: %s\n%s' % (self.name, e, "\n".join(self.content))
             else:
@@ -89,6 +84,8 @@ def get_image_filename(self, code, format, options, prefix='blockdiag'):
 
 
 def get_fontmap(self):
+    FontMap = blockdiag.utils.fontmap.FontMap
+
     try:
         fontmappath = self.builder.config.blockdiag_fontmap
         fontmap = FontMap(fontmappath)
@@ -109,7 +106,7 @@ def get_fontmap(self):
 
         if fontpath:
             config = namedtuple('Config', 'font')(fontpath)
-            _fontpath = command.detectfont(config)
+            _fontpath = blockdiag.utils.bootstrap.detectfont(config)
             fontmap.set_default_font(_fontpath)
     except:
         attrname = '_blockdiag_fontpath_warned'
@@ -149,15 +146,15 @@ def create_blockdiag(self, code, format, filename, options, prefix):
     draw = None
     fontmap = get_fontmap(self)
     try:
-        tree = parser.parse_string(code)
-        screen = builder.ScreenNodeBuilder.build(tree)
-        for node in screen.traverse_nodes():
+        tree = blockdiag.core.parser.parse_string(code)
+        diagram = blockdiag.core.builder.ScreenNodeBuilder.build(tree)
+        for node in diagram.traverse_nodes():
             if node.href:
                 node.href = resolve_reference(self, node.href, options)
 
         antialias = self.builder.config.blockdiag_antialias
-        draw = drawer.DiagramDraw(format, screen, filename,
-                                  fontmap=fontmap, antialias=antialias)
+        draw = blockdiag.core.drawer.DiagramDraw(format, diagram, filename,
+                                                 fontmap=fontmap, antialias=antialias)
 
     except Exception, e:
         if self.builder.config.blockdiag_debug:
@@ -175,7 +172,7 @@ def make_svgtag(self, image, relfn, trelfn, outfn,
     alt="%s" width="%s" height="%s">%s
     </svg>"""
 
-    code = open(outfn, 'r').read().decode('utf-8')
+    code = io.open(outfn, 'r', encoding='utf-8-sig').read()
 
     return (svgtag_format %
             (alt, image_size[0], image_size[1], code))
@@ -249,7 +246,7 @@ def render_dot_html(self, node, code, options, prefix='blockdiag',
                 image.filename = toutfn
                 image.save(thumb_size)
 
-    except UnicodeEncodeError, e:
+    except UnicodeEncodeError:
         msg = ("blockdiag error: UnicodeEncodeError caught "
                "(check your font settings)")
         self.builder.warn(msg)
@@ -308,7 +305,7 @@ def on_doctree_resolved(self, doctree, docname):
     if self.builder.name in ('gettext', 'singlehtml', 'html', 'latex', 'epub'):
         return
 
-    for node in doctree.traverse(blockdiag):
+    for node in doctree.traverse(blockdiag.utils.rst.nodes.blockdiag):
         code = node['code']
         prefix = 'blockdiag'
         format = 'PNG'
@@ -326,7 +323,7 @@ def on_doctree_resolved(self, doctree, docname):
 
 
 def setup(app):
-    app.add_node(blockdiag,
+    app.add_node(blockdiag.utils.rst.nodes.blockdiag,
                  html=(html_visit_blockdiag, None),
                  latex=(latex_visit_blockdiag, None))
     app.add_directive('blockdiag', Blockdiag)

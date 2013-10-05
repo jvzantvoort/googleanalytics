@@ -10,40 +10,32 @@
     :license: BSDL.
 """
 
-import posixpath
+import io
 import os
-import codecs
+import posixpath
 import traceback
+from collections import namedtuple
 try:
     from hashlib import sha1 as sha
 except ImportError:
     from sha import sha
 
 from docutils import nodes
-from docutils.parsers.rst import directives
-
 from sphinx.errors import SphinxError
-from sphinx.util.osutil import ensuredir, ENOENT, EPIPE
-from sphinx.util.compat import Directive
+from sphinx.util.osutil import ensuredir
 
-from nwdiag_sphinxhelper import command, parser, builder, drawer
-from nwdiag_sphinxhelper import collections, FontMap
-from nwdiag_sphinxhelper import nwdiag, NwdiagDirective
-namedtuple = collections.namedtuple
-
-import blockdiag_sphinxhelper
-detectfont = blockdiag_sphinxhelper.command.detectfont
+import nwdiag_sphinxhelper as nwdiag
 
 
 class NwdiagError(SphinxError):
     category = 'Nwdiag error'
 
 
-class Nwdiag(NwdiagDirective):
+class Nwdiag(nwdiag.utils.rst.directives.NwdiagDirective):
     def run(self):
         try:
             return super(Nwdiag, self).run()
-        except parser.ParseException, e:
+        except nwdiag.core.parser.ParseException, e:
             if self.content:
                 msg = '[%s] ParseError: %s\n%s' % (self.name, e, "\n".join(self.content))
             else:
@@ -91,6 +83,8 @@ def get_image_filename(self, code, format, options, prefix='nwdiag'):
 
 
 def get_fontmap(self):
+    FontMap = nwdiag.utils.fontmap.FontMap
+
     try:
         fontmappath = self.builder.config.nwdiag_fontmap
         fontmap = FontMap(fontmappath)
@@ -111,7 +105,7 @@ def get_fontmap(self):
 
         if fontpath:
             config = namedtuple('Config', 'font')(fontpath)
-            _fontpath = detectfont(config)
+            _fontpath = nwdiag.utils.bootstrap.detectfont(config)
             fontmap.set_default_font(_fontpath)
     except:
         attrname = '_nwdiag_fontpath_warned'
@@ -131,12 +125,12 @@ def create_nwdiag(self, code, format, filename, options, prefix='nwdiag'):
     draw = None
     fontmap = get_fontmap(self)
     try:
-        tree = parser.parse_string(code)
-        screen = builder.ScreenNodeBuilder.build(tree)
+        tree = nwdiag.core.parser.parse_string(code)
+        diagram = nwdiag.core.builder.ScreenNodeBuilder.build(tree)
 
         antialias = self.builder.config.nwdiag_antialias
-        draw = drawer.DiagramDraw(format, screen, filename,
-                                  fontmap=fontmap, antialias=antialias)
+        draw = nwdiag.core.drawer.DiagramDraw(format, diagram, filename,
+                                              fontmap=fontmap, antialias=antialias)
     except Exception, e:
         if self.builder.config.nwdiag_debug:
             traceback.print_exc()
@@ -153,7 +147,7 @@ def make_svgtag(self, image, relfn, trelfn, outfn,
     alt="%s" width="%s" height="%s">%s
     </svg>"""
 
-    code = open(outfn, 'r').read().decode('utf-8')
+    code = io.open(outfn, 'r', encoding='utf-8-sig').read()
 
     return (svgtag_format %
             (alt, image_size[0], image_size[1], code))
@@ -202,7 +196,7 @@ def render_dot_html(self, node, code, options, prefix='nwdiag',
                 image.filename = toutfn
                 image.save(thumb_size)
 
-    except UnicodeEncodeError, e:
+    except UnicodeEncodeError:
         msg = ("nwdiag error: UnicodeEncodeError caught "
                "(check your font settings)")
         self.builder.warn(msg)
@@ -261,7 +255,7 @@ def on_doctree_resolved(self, doctree, docname):
     if self.builder.name in ('gettext', 'singlehtml', 'html', 'latex', 'epub'):
         return
 
-    for node in doctree.traverse(nwdiag):
+    for node in doctree.traverse(nwdiag.utils.rst.nodes.nwdiag):
         code = node['code']
         prefix = 'nwdiag'
         format = 'PNG'
@@ -279,7 +273,7 @@ def on_doctree_resolved(self, doctree, docname):
 
 
 def setup(app):
-    app.add_node(nwdiag,
+    app.add_node(nwdiag.utils.rst.nodes.nwdiag,
                  html=(html_visit_nwdiag, None),
                  latex=(latex_visit_nwdiag, None))
     app.add_directive('nwdiag', Nwdiag)

@@ -10,40 +10,32 @@
     :license: BSDL.
 """
 
-import posixpath
+import io
 import os
-import codecs
+import posixpath
 import traceback
+from collections import namedtuple
 try:
     from hashlib import sha1 as sha
 except ImportError:
     from sha import sha
 
 from docutils import nodes
-from docutils.parsers.rst import directives
-
 from sphinx.errors import SphinxError
-from sphinx.util.osutil import ensuredir, ENOENT, EPIPE
-from sphinx.util.compat import Directive
+from sphinx.util.osutil import ensuredir
 
-from rackdiag_sphinxhelper import command, parser, builder, drawer
-from rackdiag_sphinxhelper import collections, FontMap
-from rackdiag_sphinxhelper import rackdiag, RackdiagDirective
-namedtuple = collections.namedtuple
-
-import blockdiag_sphinxhelper
-detectfont = blockdiag_sphinxhelper.command.detectfont
+import rackdiag_sphinxhelper as rackdiag
 
 
 class RackdiagError(SphinxError):
     category = 'Rackdiag error'
 
 
-class Rackdiag(RackdiagDirective):
+class Rackdiag(rackdiag.utils.rst.directives.RackdiagDirective):
     def run(self):
         try:
             return super(Rackdiag, self).run()
-        except parser.ParseException, e:
+        except rackdiag.core.parser.ParseException, e:
             if self.content:
                 msg = '[%s] ParseError: %s\n%s' % (self.name, e, "\n".join(self.content))
             else:
@@ -91,6 +83,8 @@ def get_image_filename(self, code, format, options, prefix='rackdiag'):
 
 
 def get_fontmap(self):
+    FontMap = rackdiag.utils.fontmap.FontMap
+
     try:
         fontmappath = self.builder.config.rackdiag_fontmap
         fontmap = FontMap(fontmappath)
@@ -111,7 +105,7 @@ def get_fontmap(self):
 
         if fontpath:
             config = namedtuple('Config', 'font')(fontpath)
-            _fontpath = detectfont(config)
+            _fontpath = rackdiag.utils.bootstrap.detectfont(config)
             fontmap.set_default_font(_fontpath)
     except:
         attrname = '_rackdiag_fontpath_warned'
@@ -131,12 +125,12 @@ def create_rackdiag(self, code, format, filename, options, prefix='rackdiag'):
     draw = None
     fontmap = get_fontmap(self)
     try:
-        tree = parser.parse_string(code)
-        screen = builder.ScreenNodeBuilder.build(tree)
+        tree = rackdiag.core.parser.parse_string(code)
+        diagram = rackdiag.core.builder.ScreenNodeBuilder.build(tree)
 
         antialias = self.builder.config.rackdiag_antialias
-        draw = drawer.DiagramDraw(format, screen, filename,
-                                  fontmap=fontmap, antialias=antialias)
+        draw = rackdiag.core.drawer.DiagramDraw(format, diagram, filename,
+                                                fontmap=fontmap, antialias=antialias)
     except Exception, e:
         if self.builder.config.rackdiag_debug:
             traceback.print_exc()
@@ -153,7 +147,7 @@ def make_svgtag(self, image, relfn, trelfn, outfn,
     alt="%s" width="%s" height="%s">%s
     </svg>"""
 
-    code = open(outfn, 'r').read().decode('utf-8')
+    code = io.open(outfn, 'r', encoding='utf-8-sig').read()
 
     return (svgtag_format %
             (alt, image_size[0], image_size[1], code))
@@ -202,7 +196,7 @@ def render_dot_html(self, node, code, options, prefix='rackdiag',
                 image.filename = toutfn
                 image.save(thumb_size)
 
-    except UnicodeEncodeError, e:
+    except UnicodeEncodeError:
         msg = ("rackdiag error: UnicodeEncodeError caught "
                "(check your font settings)")
         self.builder.warn(msg)
@@ -261,7 +255,7 @@ def on_doctree_resolved(self, doctree, docname):
     if self.builder.name in ('gettext', 'singlehtml', 'html', 'latex', 'epub'):
         return
 
-    for node in doctree.traverse(rackdiag):
+    for node in doctree.traverse(rackdiag.utils.rst.nodes.rackdiag):
         code = node['code']
         prefix = 'rackdiag'
         format = 'PNG'
@@ -279,7 +273,7 @@ def on_doctree_resolved(self, doctree, docname):
 
 
 def setup(app):
-    app.add_node(rackdiag,
+    app.add_node(rackdiag.utils.rst.nodes.rackdiag,
                  html=(html_visit_rackdiag, None),
                  latex=(latex_visit_rackdiag, None))
     app.add_directive('rackdiag', Rackdiag)
