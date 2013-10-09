@@ -210,6 +210,10 @@ class LSXRefRole(XRefRole):
         if target[0:2] == '->':
             target = target[2:]
             refnode['refspecific'] = True
+        if '(' in target:
+            target = target.partition('(')[0]
+            if title.endswith('()'):
+                title = title[:-2]
         return title, target
 
 
