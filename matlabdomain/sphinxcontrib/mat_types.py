@@ -13,6 +13,7 @@ import os
 import re
 import sys
 from copy import copy
+import time
 
 # Pygments MatlabLexer is in pygments.lexers.math, but recommended way to load
 # is from lexers, which has LEXERS dictionary, which PyDev doesn't see.
@@ -154,21 +155,26 @@ class MatObject(object):
         with open(mfile, 'r') as code_f:
             code = code_f.read()
         # functions must be contained in one line, no ellipsis, classdef is OK
-        pat1 = r'(?P<p1>function[ \t]+)'  # "function" + 1 or more space/tabs
-        # return values
-        pat2 = r'(?P<p2>\[?\w*[ \t]*(?:,?[ \t]*(?:...\n[ \t]*)?\w+)*\]?)'
-        # equal sign
-        pat3 = r'(?P<p3>[ \t]*(?:...\n[ \t]*)?=?[ \t]*(?:...\n[ \t]*)?)'
-        pat4 = r'(?P<p4>\w+)'  # name of function
-        pat5 = r'(?P<p5>\(\w*(?:,?[ \t]*(?:...\n[ \t]*)?\w+)*\))'  # args
+        pat = r"""^[ \t]*(function)        # keyword
+                  ([\[\], \t\w.\n]*)       # outputs
+                  ([ \t=.\n]*)             # equal sign
+                  ([\w.]+)                 # name
+                  \(?([, \t\w.\n]*)\)?"""  # args
+        pat = re.compile(pat, re.X | re.MULTILINE)
         repl = lambda m: m.group().replace('...\n', '')
-        code = re.sub(''.join([pat1, pat2, pat3, pat4, pat5]), repl, code)
+        code, nsubs = pat.subn(repl, code)
+        msg = '[%s] replaced %d ellipsis in function signatures'
+        MatObject.sphinx_dbg(msg, MAT_DOM, nsubs)
         tks = list(MatlabLexer().get_tokens(code))  # tokenenize code
         modname = path.replace(os.sep, '.')  # module name
         # assume that functions and classes always start with a keyword
         if tks[0] == (Token.Keyword, 'function'):
+            MatObject.sphinx_dbg('[%s] parsing function %s from %s.', MAT_DOM,
+                                 name, modname)
             return MatFunction(name, modname, tks)
         elif tks[0] == (Token.Keyword, 'classdef'):
+            MatObject.sphinx_dbg('[%s] parsing classdef %s from %s.', MAT_DOM,
+                                 name, modname)
             return MatClass(name, modname, tks)
         else:
             # it's a script file
