@@ -50,10 +50,18 @@ class MatObject(object):
     :class:`MatFunction` and :class:`MatClass` must begin with either
     ``function`` or ``classdef`` keywords.
     """
+
+    @staticmethod
+    def dbg(msg, *args):
+        """
+        Alternate for sphinx_dbg for test-mode.
+        """
+        print '\t<test-mode>\n' + msg % args
+
     basedir = None
     sphinx_env = None
     sphinx_app = None
-    sphinx_dbg = None
+    sphinx_dbg = dbg
 
     def __init__(self, name):
         #: name of MATLAB object
@@ -111,7 +119,15 @@ class MatObject(object):
         fullpath = os.path.join(MatObject.basedir, objname)  # objname fullpath
         # package folders imported over mfile with same name
         if os.path.isdir(fullpath):
-            return MatModule(name, fullpath, package)  # import package
+            mod = sys.modules.get(package)
+            if mod:
+                msg = '[%s] mod %s already loaded.'
+                MatObject.sphinx_dbg(msg, MAT_DOM, package)
+                return mod
+            else:
+                msg = '[%s] matlabify %s from\n\t%s.'
+                MatObject.sphinx_dbg(msg, MAT_DOM, package, fullpath)
+                return MatModule(name, fullpath, package)  # import package
         elif os.path.isfile(fullpath + '.m'):
             mfile = fullpath + '.m'
             return MatObject.parse_mfile(mfile, name, path)  # parse mfile
@@ -140,10 +156,11 @@ class MatObject(object):
         # functions must be contained in one line, no ellipsis, classdef is OK
         pat1 = r'(?P<p1>function[ \t]+)'  # "function" + 1 or more space/tabs
         # return values
-        pat2 = r'(?P<p2>\[?\w+[ \t]*(?:,[ \t]*(?:...\n[ \t]*)?\w+)*\]?)'
-        pat3 = r'(?P<p3>[ \t]*=?[ \t]*)'  # equal sign
+        pat2 = r'(?P<p2>\[?\w*[ \t]*(?:,?[ \t]*(?:...\n[ \t]*)?\w+)*\]?)'
+        # equal sign
+        pat3 = r'(?P<p3>[ \t]*(?:...\n[ \t]*)?=?[ \t]*(?:...\n[ \t]*)?)'
         pat4 = r'(?P<p4>\w+)'  # name of function
-        pat5 = r'(?P<p5>\(\w+(?:,[ \t]*(?:...\n[ \t]*)?\w+)*\))'  # args
+        pat5 = r'(?P<p5>\(\w*(?:,?[ \t]*(?:...\n[ \t]*)?\w+)*\))'  # args
         repl = lambda m: m.group().replace('...\n', '')
         code = re.sub(''.join([pat1, pat2, pat3, pat4, pat5]), repl, code)
         tks = list(MatlabLexer().get_tokens(code))  # tokenenize code
@@ -242,9 +259,20 @@ class MatModule(MatObject):
             return self.__path__
         elif name == '__package__':
             return self.__package__
+        elif name == '__module__':
+            msg = '[%s] mod %s is a package does not have __module__.'
+            MatObject.sphinx_dbg(msg, MAT_DOM, self)
+            return None
         else:
+            if hasattr(self, name):
+                msg = '[%s] mod %s already has attr %s.'
+                MatObject.sphinx_dbg(msg, MAT_DOM, self, name)
+                return getattr(self, name)
             attr = MatObject.matlabify('.'.join([self.package, name]))
             if attr:
+                setattr(self, name, attr)
+                msg = '[%s] attr %s imported from mod %s.'
+                MatObject.sphinx_dbg(msg, MAT_DOM, name, self)
                 return attr
             else:
                 super(MatModule, self).getter(name, *defargs)
@@ -392,6 +420,14 @@ class MatFunction(MatObject):
         retv = tks.pop()  # return values
         if retv[0] is Token.Text:
             self.retv = [rv.strip() for rv in retv[1].strip('[ ]').split(',')]
+            if len(self.retv) == 1:
+                # check if return is empty
+                if not self.retv[0]:
+                    self.retv = None
+                # check if return delimited by whitespace
+                elif ' ' in self.retv[0] or '\t' in self.retv[0]:
+                    self.retv = [rv for rv_tab in self.retv[0].split('\t')
+                                 for rv in rv_tab.split(' ')]
             if tks.pop() != (Token.Punctuation, '='):
                 raise TypeError('Token after outputs should be Punctuation.')
                 # TODO: raise an matlab token error or what?
@@ -430,12 +466,21 @@ class MatFunction(MatObject):
             # TODO: what is a better error here?
         # =====================================================================
         # docstring
-        docstring = tks.pop()
-        while docstring[0] is Token.Comment:
+        try:
+            docstring = tks.pop()
+        except IndexError:
+            docstring = None
+        while docstring and docstring[0] is Token.Comment:
             self.docstring += docstring[1].lstrip('%') + '\n'  # concatenate
-            wht = tks.pop()  # skip whitespace
+            try:
+                wht = tks.pop()  # skip whitespace
+            except IndexError:
+                break
             while wht in zip((Token.Text,) * 3, (' ', '\t', '\n')):
-                wht = tks.pop()
+                try:
+                    wht = tks.pop()
+                except IndexError:
+                    break
             docstring = wht  # check if Token is Comment
         # =====================================================================
         # main body
@@ -1020,4 +1065,3 @@ class MatModuleAnalyzer(object):
         self.attr_docs = attr_visitor_collected
         self.tagorder = attr_visitor_tagorder
         return attr_visitor_collected
-
