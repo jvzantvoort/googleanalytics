@@ -41,6 +41,7 @@ List of extensions
 - actdiag: embed activity diagrams by using actdiag_
 - adadomain: an extension for Ada support (Sphinx 1.0 needed)
 - ansi: parse ANSI color sequences inside documents
+- autoprogram_: documenting CLI programs
 - autorun: Execute code in a ``runblock`` directive.
 - blockdiag: embed block diagrams by using blockdiag_
 - cheeseshop: easily link to PyPI packages
@@ -61,7 +62,7 @@ List of extensions
 - googleanalytics: track web visitor statistics by using `Google Analytics`_
 - googlechart: embed charts by using `Google Chart`_
 - googlemaps: embed maps by using `Google Maps`_
-- httpdomain: a domain for documenting RESTful HTTP APIs.
+- httpdomain_: a domain for documenting RESTful HTTP APIs.
 - hyphenator: client-side hyphenation of HTML using hyphenator_
 - inlinesyntaxhighlight_: inline syntax highlighting
 - lassodomain: a domain for documenting Lasso_ source code
@@ -98,6 +99,8 @@ List of extensions
 - zopeext: provide an ``autointerface`` directive for using `Zope interfaces`_.
 
 .. _aafigure: https://launchpad.net/aafigure
+
+.. _autoprogram: https://pythonhosted.org/sphinxcontrib-autoprogram/
 
 .. _gnuplot: http://www.gnuplot.info/
 
@@ -177,6 +180,8 @@ List of extensions
 .. _restbuilder: https://pypi.python.org/pypi/sphinxcontrib-restbuilder
 
 .. _Lasso: http://www.lassosoft.com/
+
+.. _httpdomain: https://pythonhosted.org/sphinxcontrib-httpdomain/
 
 For contributors
 ================
