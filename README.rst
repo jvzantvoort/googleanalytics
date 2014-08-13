@@ -44,6 +44,7 @@ List of extensions
 - autoprogram_: documenting CLI programs
 - autorun: Execute code in a ``runblock`` directive.
 - blockdiag: embed block diagrams by using blockdiag_
+- cacoo: embed diagram from Cacoo_
 - cheeseshop: easily link to PyPI packages
 - clearquest: create tables from ClearQuest_ queries.
 - cmakedomain_: a domain for CMake_
@@ -103,6 +104,8 @@ List of extensions
 .. _aafigure: https://launchpad.net/aafigure
 
 .. _autoprogram: https://pythonhosted.org/sphinxcontrib-autoprogram/
+
+.. _Cacoo: https://cacoo.com/
 
 .. _gnuplot: http://www.gnuplot.info/
 
