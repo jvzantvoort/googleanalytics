@@ -38,8 +38,10 @@ class actdiag_node(actdiag.utils.rst.nodes.actdiag):
             filename = self.get_abspath(image_format, builder)
 
         antialias = builder.config.actdiag_antialias
+        transparency = builder.config.actdiag_transparency
         image = super(actdiag_node, self).to_drawer(image_format, filename, fontmap,
-                                                    antialias=antialias, **kwargs)
+                                                    antialias=antialias, transparency=transparency,
+                                                    **kwargs)
         for node in image.diagram.traverse_nodes():
             node.href = resolve_reference(builder, node.href)
 
@@ -59,7 +61,9 @@ class actdiag_node(actdiag.utils.rst.nodes.actdiag):
                        fontmap=builder.config.actdiag_fontmap,
                        format=image_format)
 
-        if hasattr(builder, 'imgpath'):
+        if hasattr(builder, 'imagedir'):  # Sphinx (>= 1.3.x)
+            outputdir = os.path.join(builder.outdir, builder.imagedir)
+        elif hasattr(builder, 'imgpath'):  # Sphinx (<= 1.2.x) and HTML writer
             outputdir = os.path.join(builder.outdir, '_images')
         else:
             outputdir = builder.outdir
@@ -303,6 +307,7 @@ def setup(app):
     app.add_config_value('actdiag_fontpath', None, 'html')
     app.add_config_value('actdiag_fontmap', None, 'html')
     app.add_config_value('actdiag_antialias', False, 'html')
+    app.add_config_value('actdiag_transparency', True, 'html')
     app.add_config_value('actdiag_debug', False, 'html')
     app.add_config_value('actdiag_html_image_format', 'PNG', 'html')
     app.add_config_value('actdiag_tex_image_format', None, 'html')  # backward compatibility for 0.6.1

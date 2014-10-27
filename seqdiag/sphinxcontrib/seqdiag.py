@@ -38,8 +38,10 @@ class seqdiag_node(seqdiag.utils.rst.nodes.seqdiag):
             filename = self.get_abspath(image_format, builder)
 
         antialias = builder.config.seqdiag_antialias
+        transparency = builder.config.seqdiag_transparency
         image = super(seqdiag_node, self).to_drawer(image_format, filename, fontmap,
-                                                    antialias=antialias, **kwargs)
+                                                    antialias=antialias, transparency=transparency,
+                                                    **kwargs)
         for node in image.diagram.traverse_nodes():
             node.href = resolve_reference(builder, node.href)
 
@@ -59,7 +61,9 @@ class seqdiag_node(seqdiag.utils.rst.nodes.seqdiag):
                        fontmap=builder.config.seqdiag_fontmap,
                        format=image_format)
 
-        if hasattr(builder, 'imgpath'):
+        if hasattr(builder, 'imagedir'):  # Sphinx (>= 1.3.x)
+            outputdir = os.path.join(builder.outdir, builder.imagedir)
+        elif hasattr(builder, 'imgpath'):  # Sphinx (<= 1.2.x) and HTML writer
             outputdir = os.path.join(builder.outdir, '_images')
         else:
             outputdir = builder.outdir
@@ -303,6 +307,7 @@ def setup(app):
     app.add_config_value('seqdiag_fontpath', None, 'html')
     app.add_config_value('seqdiag_fontmap', None, 'html')
     app.add_config_value('seqdiag_antialias', False, 'html')
+    app.add_config_value('seqdiag_transparency', True, 'html')
     app.add_config_value('seqdiag_debug', False, 'html')
     app.add_config_value('seqdiag_html_image_format', 'PNG', 'html')
     app.add_config_value('seqdiag_tex_image_format', None, 'html')  # backward compatibility for 0.6.1
