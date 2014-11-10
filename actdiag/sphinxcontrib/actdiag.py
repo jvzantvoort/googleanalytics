@@ -15,6 +15,7 @@ from __future__ import absolute_import
 import os
 import re
 import traceback
+import pkg_resources
 from collections import namedtuple
 from docutils import nodes
 from sphinx import addnodes
@@ -51,7 +52,8 @@ class actdiag_node(actdiag.utils.rst.nodes.actdiag):
         options = dict(antialias=builder.config.actdiag_antialias,
                        fontpath=builder.config.actdiag_fontpath,
                        fontmap=builder.config.actdiag_fontmap,
-                       format=image_format)
+                       format=image_format,
+                       transparency=builder.config.actdiag_transparency)
         outputdir = getattr(builder, 'imgpath', builder.outdir)
         return os.path.join(outputdir, self.get_path(**options))
 
@@ -59,7 +61,8 @@ class actdiag_node(actdiag.utils.rst.nodes.actdiag):
         options = dict(antialias=builder.config.actdiag_antialias,
                        fontpath=builder.config.actdiag_fontpath,
                        fontmap=builder.config.actdiag_fontmap,
-                       format=image_format)
+                       format=image_format,
+                       transparency=builder.config.actdiag_transparency)
 
         if hasattr(builder, 'imagedir'):  # Sphinx (>= 1.3.x)
             outputdir = os.path.join(builder.outdir, builder.imagedir)
@@ -88,6 +91,8 @@ def resolve_reference(builder, href):
     matched = pattern.search(href)
     if matched is None:
         return href
+    elif not hasattr(builder, 'current_docname'):  # ex. latex builder
+        return matched.group(1)
     else:
         refid = matched.group(1)
         domain = builder.env.domains['std']
@@ -314,3 +319,9 @@ def setup(app):
     app.add_config_value('actdiag_latex_image_format', 'PNG', 'html')
     app.connect("builder-inited", on_builder_inited)
     app.connect("doctree-resolved", on_doctree_resolved)
+
+    return {
+        'version': pkg_resources.require('actdiag')[0].version,
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
+    }

@@ -15,7 +15,6 @@ except ImportError:  # Python<2.5
     from sha import sha as sha1
 from docutils import nodes
 from docutils.parsers.rst import directives
-from docutils.parsers.rst.directives.images import Figure
 from sphinx.errors import SphinxError
 from sphinx.util.compat import Directive
 from sphinx.util.osutil import ensuredir, ENOENT
@@ -31,6 +30,10 @@ class PlantUmlError(SphinxError):
 class plantuml(nodes.General, nodes.Element):
     pass
 
+def align(argument):
+    align_values = ('left', 'center', 'right')
+    return directives.choice(argument, align_values)
+
 class UmlDirective(Directive):
     """Directive to insert PlantUML markup
 
@@ -42,35 +45,31 @@ class UmlDirective(Directive):
            Alice -> Bob: Hello
            Alice <- Bob: Hi
     """
-    def align(argument):
-        return directives.choice(argument, Figure.align_h_values)
-
     has_content = True
     option_spec = {'alt': directives.unchanged,
                    'caption': directives.unchanged,
                    'height': directives.length_or_unitless,
                    'width': directives.length_or_percentage_or_unitless,
                    'scale': directives.percentage,
-                   'align': align }
+                   'align': align,
+                   }
 
     def run(self):
         node = plantuml(self.block_text, **self.options)
         node['uml'] = '\n'.join(self.content)
 
-        # Insert a figure
-        import docutils.statemachine
-        cnode = nodes.Element()  # anonymous container for parsing
-        if 'align' not in self.options:
-            self.options['align'] = 'center'
-        fig = nodes.figure('', node, align=self.options['align'])
+        # XXX maybe this should be moved to _visit_plantuml functions. it
+        # seems wrong to insert "figure" node by "plantuml" directive.
+        if 'caption' in self.options or 'align' in self.options:
+            node = nodes.figure('', node, align=self.options.get('align'))
         if 'caption' in self.options:
+            import docutils.statemachine
+            cnode = nodes.Element()  # anonymous container for parsing
             sl = docutils.statemachine.StringList([self.options['caption']],
                                                   source='')
             self.state.nested_parse(sl, self.content_offset, cnode)
             caption = nodes.caption(self.options['caption'], '', *cnode)
-            fig += caption
-
-        node = fig
+            node += caption
 
         return [node]
 
