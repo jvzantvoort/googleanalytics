@@ -30,6 +30,10 @@ class PlantUmlError(SphinxError):
 class plantuml(nodes.General, nodes.Element):
     pass
 
+def align(argument):
+    align_values = ('left', 'center', 'right')
+    return directives.choice(argument, align_values)
+
 class UmlDirective(Directive):
     """Directive to insert PlantUML markup
 
@@ -46,14 +50,18 @@ class UmlDirective(Directive):
                    'caption': directives.unchanged,
                    'height': directives.length_or_unitless,
                    'width': directives.length_or_percentage_or_unitless,
-                   'scale': directives.percentage}
+                   'scale': directives.percentage,
+                   'align': align,
+                   }
 
     def run(self):
         node = plantuml(self.block_text, **self.options)
         node['uml'] = '\n'.join(self.content)
 
-        # if a caption is defined, insert a 'figure' with this node and
-        # the caption
+        # XXX maybe this should be moved to _visit_plantuml functions. it
+        # seems wrong to insert "figure" node by "plantuml" directive.
+        if 'caption' in self.options or 'align' in self.options:
+            node = nodes.figure('', node, align=self.options.get('align'))
         if 'caption' in self.options:
             import docutils.statemachine
             cnode = nodes.Element()  # anonymous container for parsing
@@ -61,9 +69,8 @@ class UmlDirective(Directive):
                                                   source='')
             self.state.nested_parse(sl, self.content_offset, cnode)
             caption = nodes.caption(self.options['caption'], '', *cnode)
-            fig = nodes.figure('', node)
-            fig += caption
-            node = fig
+            node += caption
+
         return [node]
 
 def generate_name(self, node, fileformat):
@@ -92,6 +99,13 @@ def generate_plantuml_args(self, fileformat):
     return args
 
 def render_plantuml(self, node, fileformat):
+
+    # Load skin content
+    if self.builder.config.plantuml_skin:
+        skin_file = open(self.builder.config.plantuml_skin, 'r')
+        node['uml'] = skin_file.read() + '\n' + node['uml']
+        skin_file.close()
+
     refname, outfname = generate_name(self, node, fileformat)
     if os.path.exists(outfname):
         return refname, outfname  # don't regenerate
@@ -303,6 +317,7 @@ def setup(app):
     app.add_config_value('plantuml_output_format', 'png', 'html')
     app.add_config_value('plantuml_epstopdf', 'epstopdf', '')
     app.add_config_value('plantuml_latex_output_format', 'png', '')
+    app.add_config_value('plantuml_skin', None, '')
 
     # imitate what app.add_node() does
     if 'rst2pdf.pdfbuilder' in app.config.extensions:
