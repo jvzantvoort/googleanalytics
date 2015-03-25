@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
+import os
 import glob
 import codecs
+import importlib
 
 from sphinx.util.console import bold
 from sphinx.ext.autodoc import Documenter
 
-
-def src_option(arg):
-    if arg is None:
-        return []
-    return glob.glob(arg)
-
-
-def analyzer_option(arg):
-    if arg is None:
-        return None
-    return arg
+from . import analyzers
 
 
 class AnySrcDocumenter(Documenter):
@@ -26,12 +18,20 @@ class AnySrcDocumenter(Documenter):
     content_indent = u''
     titles_allowed = True
 
+    # proxy directive paramenters only
     option_spec = {
-        'src': src_option,
-        'analyzer': analyzer_option,
+        'src': lambda x: x,
+        'analyzer': lambda x: x,
     }
 
-    analyzer_by_key = {}
+    # default analyzers
+    analyzer_by_key = {
+        'js': analyzers.JSAnalyzer,
+    }
+
+    @classmethod
+    def can_document_member(cls, *args, **kwargs):
+        return False  # stop documenters chain
 
     @classmethod
     def register_analyzer(cls, key, analyzer_class):
@@ -42,15 +42,45 @@ class AnySrcDocumenter(Documenter):
         """
         cls.analyzer_by_key[key] = analyzer_class
 
+    @classmethod
+    def setup_analyzers(cls, config):
+
+        def import_class(path):
+            parts = path.split('.')
+            module, class_name = parts[:-1], parts[-1]
+            return getattr(
+                importlib.import_module('.'.join(module)),
+                class_name
+            )
+
+        custom_analyzers = config.autoanysrc_analyzers or {}
+        for key, value in custom_analyzers.items():
+            cls.register_analyzer(key, import_class(value))
+
     def info(self, msg):
         self.directive.env.app.info('    <autoanysrc> %s' % msg)
+
+    def collect_files(self):
+        arg = self.options.src
+        if arg is None:
+            return []
+        if not os.path.isabs(arg):
+            arg = os.path.join(
+                self.directive.env.srcdir,
+                arg,
+            )
+        self.info('collect by: ' + bold(arg))
+        return glob.glob(arg)
 
     def process(self):
         """process files one by one with analyzer"""
 
-        for filepath in self.options.src:
+        for filepath in self.collect_files():
 
-            self.info('processing: ' + bold(filepath))
+            self.info(
+                '%s processing: ' % self.analyzer.__class__.__name__
+                + bold(filepath)
+            )
             self.directive.env.note_dependency(filepath)
 
             with codecs.open(filepath, 'r', 'utf-8') as f:
@@ -64,7 +94,9 @@ class AnySrcDocumenter(Documenter):
             check_module=False, all_members=False):
 
         # initialize analyzer
-        analyzer_class = self.analyzer_by_key.get(self.options.analyzer)
+        analyzer_class = AnySrcDocumenter.analyzer_by_key.get(
+            self.options.analyzer
+        )
         if not analyzer_class:
             self.info(
                 'Analyzer not defined for: %s' % self.options.anaylyzer
@@ -86,12 +118,16 @@ class AnySrcDocumenter(Documenter):
         self.process()
 
 
+def setup_custom_analyzers(app):
+    # setup custom analyzers from config
+    AnySrcDocumenter.setup_analyzers(app.builder.config)
+
+
 def setup(app):
-
-    # register default anaylzers
-    from .analyzers import JSAnalyzer
-    AnySrcDocumenter.register_analyzer('js', JSAnalyzer)
-
+    app.add_config_value('autoanysrc_analyzers', None, False)
     app.add_autodocumenter(AnySrcDocumenter)
-
-    return {'version': '0.0.0', 'parallel_read_safe': True}
+    app.connect('builder-inited', setup_custom_analyzers)
+    return {
+        'version': '0.0.0',  # where docs?
+        'parallel_read_safe': True,
+    }

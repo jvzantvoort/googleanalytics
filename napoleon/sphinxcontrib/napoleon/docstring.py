@@ -8,17 +8,15 @@ import collections
 import inspect
 import re
 import sys
-from sphinxcontrib.napoleon.iterators import modify_iter
 
-
-if sys.version_info[0] >= 3:
-    basestring = str
-    xrange = range
+from pockets import modify_iter
+from six import string_types
+from six.moves import xrange
 
 
 _directive_regex = re.compile(r'\.\. \S+::')
-_google_untyped_arg_regex = re.compile(r'\s*(\w+)\s*:\s*(.*)')
-_google_typed_arg_regex = re.compile(r'\s*(\w+)\s*\(\s*(.+?)\s*\)\s*:\s*(.*)')
+_google_untyped_arg_regex = re.compile(r'\s*(.+?)\s*:\s*(.*)')
+_google_typed_arg_regex = re.compile(r'\s*(.+?)\s*\(\s*(.+?)\s*\)\s*:\s*(.*)')
 
 
 class GoogleDocstring(object):
@@ -84,6 +82,7 @@ class GoogleDocstring(object):
     <BLANKLINE>
     :returns: Description of return value.
     :rtype: str
+    <BLANKLINE>
 
     """
     def __init__(self, docstring, config=None, app=None, what='', name='',
@@ -109,7 +108,7 @@ class GoogleDocstring(object):
         self._name = name
         self._obj = obj
         self._opt = options
-        if isinstance(docstring, basestring):
+        if isinstance(docstring, string_types):
             docstring = docstring.splitlines()
         self._lines = docstring
         self._line_iter = modify_iter(docstring, modifier=lambda s: s.rstrip())
@@ -140,6 +139,7 @@ class GoogleDocstring(object):
                 'warning': self._parse_warning_section,
                 'warnings': self._parse_warning_section,
                 'warns': self._parse_warns_section,
+                'yield': self._parse_yields_section,
                 'yields': self._parse_yields_section,
             }
         self._parse()
@@ -183,17 +183,17 @@ class GoogleDocstring(object):
     def _consume_indented_block(self, indent=1):
         lines = []
         line = self._line_iter.peek()
-        while(not self._is_section_break()
-              and (not line or self._is_indented(line, indent))):
+        while(not self._is_section_break() and
+              (not line or self._is_indented(line, indent))):
             lines.append(self._line_iter.next())
             line = self._line_iter.peek()
         return lines
 
     def _consume_contiguous(self):
         lines = []
-        while (self._line_iter.has_next()
-               and self._line_iter.peek()
-               and not self._is_section_header()):
+        while (self._line_iter.has_next() and
+               self._line_iter.peek() and
+               not self._is_section_header()):
             lines.append(self._line_iter.next())
         return lines
 
@@ -222,6 +222,11 @@ class GoogleDocstring(object):
             if match:
                 _name = match.group(1)
                 _desc = match.group(2)
+
+        if _name[:2] == '**':
+            _name = r'\*\*'+_name[2:]
+        elif _name[:1] == '*':
+            _name = r'\*'+_name[1:]
 
         if prefer_type and not _type:
             _type, _name = _name, _type
@@ -299,11 +304,10 @@ class GoogleDocstring(object):
                 padding = ' ' * len(prefix)
             result_lines = []
             for i, line in enumerate(lines):
-                if line:
-                    if i == 0:
-                        result_lines.append(prefix + line)
-                    else:
-                        result_lines.append(padding + line)
+                if i == 0:
+                    result_lines.append((prefix + line).rstrip())
+                elif line:
+                    result_lines.append(padding + line)
                 else:
                     result_lines.append('')
             return result_lines
@@ -397,11 +401,11 @@ class GoogleDocstring(object):
 
     def _is_section_break(self):
         line = self._line_iter.peek()
-        return (not self._line_iter.has_next()
-                or self._is_section_header()
-                or (self._is_in_section
-                    and line
-                    and not self._is_indented(line, self._section_indent)))
+        return (not self._line_iter.has_next() or
+                self._is_section_header() or
+                (self._is_in_section and
+                    line and
+                    not self._is_indented(line, self._section_indent)))
 
     def _parse(self):
         self._parsed_lines = self._consume_empty()
@@ -581,7 +585,7 @@ class GoogleDocstring(object):
         return self._format_fields('Warns', self._consume_fields())
 
     def _parse_yields_section(self, section):
-        fields = self._consume_fields(prefer_type=True)
+        fields = self._consume_returns_section()
         return self._format_fields('Yields', fields)
 
     def _strip_empty(self, lines):
@@ -672,6 +676,7 @@ class NumpyDocstring(GoogleDocstring):
     <BLANKLINE>
     :returns: Description of return value.
     :rtype: str
+    <BLANKLINE>
 
     Methods
     -------
@@ -732,17 +737,17 @@ class NumpyDocstring(GoogleDocstring):
 
     def _is_section_break(self):
         line1, line2 = self._line_iter.peek(2)
-        return (not self._line_iter.has_next()
-                or self._is_section_header()
-                or ['', ''] == [line1, line2]
-                or (self._is_in_section
-                    and line1
-                    and not self._is_indented(line1, self._section_indent)))
+        return (not self._line_iter.has_next() or
+                self._is_section_header() or
+                ['', ''] == [line1, line2] or
+                (self._is_in_section and
+                    line1 and
+                    not self._is_indented(line1, self._section_indent)))
 
     def _is_section_header(self):
         section, underline = self._line_iter.peek(2)
         section = section.lower()
-        if section in self._sections and isinstance(underline, basestring):
+        if section in self._sections and isinstance(underline, string_types):
             pattern = r'[=\-`:\'"~^_*+#<>]{' + str(len(section)) + r'}$'
             return bool(re.match(pattern, underline))
         elif self._directive_sections:
@@ -766,6 +771,8 @@ class NumpyDocstring(GoogleDocstring):
         """
         Derived from the NumpyDoc implementation of _parse_see_also.
 
+        See Also
+        --------
         func_name : Descriptive text
             continued text
         another_func_name : Descriptive text

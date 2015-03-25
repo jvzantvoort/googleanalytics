@@ -677,6 +677,12 @@ will be rendered as:
 
       .. note::
 
+         It is worth noting that the names of endpoints that are applied to
+         blueprints are prefixed with the blueprint's name (e.g.
+         blueprint.endpoint).
+
+      .. note::
+
          While the `undoc-members`_ flag of :mod:`sphinx.ext.autodoc` extension
          includes members without docstrings, ``undoc-endpoints`` option has
          nothing to do with docstrings. It just excludes specified endpoints.
@@ -763,7 +769,7 @@ will be rendered as:
          .. autobottle:: yourwebapp:app
             :endpoints:
 
-      will document all endpoints in the flask app.
+      will document all endpoints in the bottle app.
 
       For compatibility, omitting this option will produce the same effect
       like above.
@@ -835,17 +841,18 @@ will be rendered as:
       .. sourcecode:: rst
 
          .. autotornado:: yourwebapp:app
-            :endpoints: user, post, friends
+            :endpoints: User.get, User.post, Friends.get
 
-      will document :func:`user`, :func:`post`, and :func:`friends`
-      view functions, and
+      will document the :func:`get` and :func:`post` methods of the
+      :class:`User` :class:`RequestHandler` and the :func:`get` method
+      of the :class:`Friend` :class:`RequestHandler`, while
 
       .. sourcecode:: rst
 
          .. autotornado:: yourwebapp:app
             :endpoints:
 
-      will document all endpoints in the flask app.
+      will document all endpoints in the tornado app.
 
       For compatibility, omitting this option will produce the same effect
       like above.
@@ -899,6 +906,15 @@ __ https://bitbucket.org/birkenfeld/sphinx-contrib
 
 Changelog
 ---------
+
+Version 1.3.1
+`````````````
+
+To be released.
+
+- Added :http:statuscode:`429 Too Many Requests` as a valid
+  :rst:role:`http:statuscode`.  [:pull:`81` by DDBReloaded]
+
 
 Version 1.3.0
 `````````````

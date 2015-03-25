@@ -4,6 +4,7 @@ import tempfile
 import shutil
 from sphinx.application import Sphinx
 
+
 _fixturedir = os.path.join(os.path.dirname(__file__), 'fixture')
 
 _tempdir = _srcdir = _outdir = None
@@ -12,9 +13,10 @@ _tempdir = _srcdir = _outdir = None
 def setup():
     global _tempdir, _srcdir, _outdir
     _tempdir = tempfile.mkdtemp()
-    _srcdir = os.path.join(_tempdir, 'src')
+    # _srcdir = os.path.join(_tempdir, 'src')
+    _srcdir = os.path.join(os.path.dirname(__file__), 'fixture')
     _outdir = os.path.join(_tempdir, 'out')
-    os.mkdir(_srcdir)
+    # os.mkdir(_srcdir)
 
 
 def teardown():
@@ -50,7 +52,7 @@ def with_runsphinx(builder, confoverrides=None):
                 runsphinx(src, builder, confoverrides)
                 func()
             finally:
-                os.unlink(os.path.join(_srcdir, 'index.rst'))
+                # os.unlink(os.path.join(_srcdir, 'index.rst'))
                 shutil.rmtree(_outdir)
         test.__name__ = func.__name__
         return test
@@ -62,7 +64,7 @@ def test_buildhtml_simple():
     """Generate simple
 
     .. autoanysrc:: services
-        :src: tests/fixture/**/*.js
+        :src: app/*.js
         :analyzer: js
     """
     content = readfile('index.html')
@@ -76,3 +78,21 @@ def test_buildhtml_simple():
 
     # check param desc
     assert 'An URI to the location' in content
+
+
+@with_runsphinx('html', confoverrides={
+    'autoanysrc_analyzers': {
+        'js-custom': 'conf.JSCustomAnalyzer',
+    },
+})
+def test_custom_analyzer():
+    """Generate simple
+
+    .. autoanysrc:: services
+        :src: app/*.js
+        :analyzer: js-custom
+    """
+    content = readfile('index.html')
+
+    # check head
+    assert 'From custom analyzer' in content
