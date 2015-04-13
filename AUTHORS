@@ -6,6 +6,9 @@ aafig:
 autorun:
    Vadim Gubergrits <vadim.gubergrits@gmail.com>
 
+cheader:
+   Arto Bendiken <arto@bendiken.net>
+
 context:
    Wei-Wei Guo <wwguocn@gmail.com>
 
@@ -25,7 +28,7 @@ mscgen:
    Leandro Lucarella <llucax@gmail.com>
 
 napoleon:
-   Rob Ruana <rob@relentlessidiot.com>
+   Rob Ruana <rob@robruana.com>
 
 rubydomain:
    SHIBUKAWA Yoshiki <yoshiki@shibu.jp>
@@ -85,6 +88,12 @@ nicovideo:
 slide:
    Takeshi KOMIYA <i.tkomiya@gmail.com>
 
+cacoo:
+   Takeshi KOMIYA <i.tkomiya@gmail.com>
+
+astah:
+   Takeshi KOMIYA <i.tkomiya@gmail.com>
+
 requirements:
    Andrey Mikhaylenko <neithere@gmail.com>
 
@@ -138,3 +147,13 @@ py_directive:
 
 autoprogram:
    Hong Minhee <minhee@dahlia.kr>
+
+examplecode:
+    Serge Domkowski <sergedomk@gmail.com>
+
+autoanysrc:
+   Evgeniy Tatarkin <tatarkin.evg@gmail.com>
+
+cf3domain:
+   Jimmy Thrasibule <jimmy.thrasibule@gmail.com>
+

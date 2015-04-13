@@ -41,9 +41,14 @@ List of extensions
 - actdiag: embed activity diagrams by using actdiag_
 - adadomain: an extension for Ada support (Sphinx 1.0 needed)
 - ansi: parse ANSI color sequences inside documents
+- astah: embed diagram by using astah_
+- autoanysrc: Gather reST documentation from any source files
 - autoprogram_: documenting CLI programs
 - autorun: Execute code in a ``runblock`` directive.
 - blockdiag: embed block diagrams by using blockdiag_
+- cacoo: embed diagram from Cacoo_
+- cf3domain: a domain for `CFEngine 3`_ policies
+- cheader_: The missing ``c:header`` directive for Sphinx's built-in C domain.
 - cheeseshop: easily link to PyPI packages
 - clearquest: create tables from ClearQuest_ queries.
 - cmakedomain_: a domain for CMake_
@@ -53,7 +58,9 @@ List of extensions
 - domaintools_: A tool for easy domain creation.
 - email: obfuscate email addresses
 - erlangdomain: an extension for Erlang support (Sphinx 1.0 needed)
-- exceltable: embed Excel spreadsheets into documents using exceltable_
+- examplecode: this extension adds support for a multiple language code block
+  widget to Sphinx_.
+- exceltable_: embed Excel spreadsheets into documents
 - feed: an extension for creating syndication feeds and time-based overviews
   from your site content
 - findanything_: an extension to add Sublime Text 2-like findanything panels
@@ -66,6 +73,7 @@ List of extensions
 - hyphenator: client-side hyphenation of HTML using hyphenator_
 - inlinesyntaxhighlight_: inline syntax highlighting
 - lassodomain: a domain for documenting Lasso_ source code
+- libreoffice: an extension to include any drawing supported by LibreOffice (e.g. odg, vsd...).
 - lilypond: an extension inserting music scripts from Lilypond_ in PNG format.
 - makedomain_: a domain for `GNU Make`_
 - matlabdomain_: document MATLAB_ and `GNU Octave`_ code.
@@ -100,7 +108,11 @@ List of extensions
 
 .. _aafigure: https://launchpad.net/aafigure
 
+.. _astah: http://astah.change-vision.com/
+
 .. _autoprogram: https://pythonhosted.org/sphinxcontrib-autoprogram/
+
+.. _Cacoo: https://cacoo.com/
 
 .. _gnuplot: http://www.gnuplot.info/
 
@@ -183,6 +195,10 @@ List of extensions
 
 .. _httpdomain: https://pythonhosted.org/sphinxcontrib-httpdomain/
 
+.. _cheader: https://pypi.python.org/pypi/sphinxcontrib-cheader
+
+.. _CFEngine 3: http://cfengine.com/
+
 For contributors
 ================
 
@@ -198,4 +214,3 @@ When adding or updating your extension, please adhere to these guidelines:
   an ``ext/LICENSE`` file.
 * Each extension can maintain a changelog and readme file; these files should
   be called ``ext/CHANGES`` and ``ext/README.rst``, respectively.
-

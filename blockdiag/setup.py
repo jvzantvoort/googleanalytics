@@ -2,38 +2,19 @@
 
 from setuptools import setup, find_packages
 
-long_desc = '''
-This package contains the blockdiag Sphinx extension.
 
-.. _Sphinx: http://sphinx.pocoo.org/
-.. _blockdiag: http://blockdiag.com/en/blockdiag/
-
-This extension enable you to insert block diagrams in your Sphinx document.
-Following code is sample::
-
-   .. blockdiag::
-
-      diagram {
-        A -> B -> C;
-             B -> D;
-      }
-
-
-This module needs blockdiag_.
-'''
-
-requires = ['blockdiag>=1.3.0', 'Sphinx>=0.6', 'setuptools']
+requires = ['blockdiag>=1.5.0', 'Sphinx>=0.6']
 
 setup(
     name='sphinxcontrib-blockdiag',
-    version='1.3.0',
+    version='1.5.1',
     url='http://bitbucket.org/birkenfeld/sphinx-contrib',
     download_url='http://pypi.python.org/pypi/sphinxcontrib-blockdiag',
     license='BSD',
-    author='Takeshi Komiya',
+    author='Takeshi KOMIYA',
     author_email='i.tkomiya@gmail.com',
     description='Sphinx "blockdiag" extension',
-    long_description=long_desc,
+    long_description=open("README.rst").read(),
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -47,6 +28,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Documentation',
         'Topic :: Utilities',
     ],

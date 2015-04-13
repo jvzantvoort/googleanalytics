@@ -6,7 +6,11 @@
 """
 
 import sys
+
+from six import iteritems
 from sphinxcontrib.napoleon.docstring import GoogleDocstring, NumpyDocstring
+from sphinxcontrib.napoleon._version import __version__
+assert __version__  # silence pyflakes
 
 
 class Config(object):
@@ -144,7 +148,8 @@ class Config(object):
         **If False**::
 
             .. attribute:: attr1
-               :annotation: int
+
+               *int*
 
                Description of `attr1`
 
@@ -210,9 +215,9 @@ class Config(object):
     }
 
     def __init__(self, **settings):
-        for name, (default, rebuild) in self._config_values.iteritems():
+        for name, (default, rebuild) in iteritems(self._config_values):
             setattr(self, name, default)
-        for name, value in settings.iteritems():
+        for name, value in iteritems(settings):
             setattr(self, name, value)
 
 
@@ -245,7 +250,7 @@ def setup(app):
     app.connect('autodoc-process-docstring', _process_docstring)
     app.connect('autodoc-skip-member', _skip_member)
 
-    for name, (default, rebuild) in Config._config_values.iteritems():
+    for name, (default, rebuild) in iteritems(Config._config_values):
         app.add_config_value(name, default, rebuild)
 
 
@@ -351,13 +356,21 @@ def _skip_member(app, what, name, obj, skip, options):
                 qualname = getattr(obj, '__qualname__', '')
                 cls_path, _, _ = qualname.rpartition('.')
                 if cls_path:
-                    import importlib
-                    import functools
+                    try:
+                        if '.' in cls_path:
+                            import importlib
+                            import functools
 
-                    mod = importlib.import_module(obj.__module__)
-                    cls = functools.reduce(getattr, cls_path.split('.'), mod)
-                    cls_is_owner = (cls and hasattr(cls, name) and
-                                    name in cls.__dict__)
+                            mod = importlib.import_module(obj.__module__)
+                            mod_path = cls_path.split('.')
+                            cls = functools.reduce(getattr, mod_path, mod)
+                        else:
+                            cls = obj.__globals__[cls_path]
+                    except:
+                        cls_is_owner = False
+                    else:
+                        cls_is_owner = (cls and hasattr(cls, name) and
+                                        name in cls.__dict__)
                 else:
                     cls_is_owner = False
             else:
