@@ -3,11 +3,111 @@
 This file describes user-visible changes between the extension versions.
 
 
+Version 0.3.10 (2015-06-11)
+---------------------------
+
+* Undoes formatting changes in version 0.3.7
+* Description ALWAYS starts on same line as type in output::
+
+    attr (type): description
+
+  renders as::
+
+    .. attribute:: attr
+
+       *type* -- description
+
+  whereas::
+
+    attr (type):
+        description
+
+  ALSO renders as::
+
+    .. attribute:: attr
+
+       *type* -- description
+
+
+Version 0.3.9 (2015-06-10)
+--------------------------
+
+* Formatting in Raises section updated to match Args, Returns, Yields, etc...
+* If a newline is present immediately after the colon in Raises section, then
+  the output will also have a line break, with no m-dash separator
+
+
+Version 0.3.8 (2015-06-10)
+--------------------------
+
+* Fixes formatting in Raises section when type contains cross references
+
+
+Version 0.3.7 (2015-06-09)
+--------------------------
+
+* Adds explicit type parsing for inline attribute and @property docs.
+* Attribute types are no longer rendered on a separate line if the source
+  docstring did not use a newline after the type::
+
+    attr (type): description
+
+  renders as::
+
+    .. attribute:: attr
+
+       *type* -- description
+
+  whereas::
+
+    attr (type):
+        description
+
+  renders as::
+
+    .. attribute:: attr
+
+       *type*
+
+       description
+
+
+Version 0.3.6 (2015-05-27)
+--------------------------
+
+* Removes docutils inline parser because it is incompatible with more recent
+  versions of docutils.
+
+
+Version 0.3.5 (2015-05-27)
+--------------------------
+
+* Uses docutils to parse inline markup in params, attributes, return types...
+
+
+Version 0.3.4 (2015-05-03)
+--------------------------
+
+* Correctly handles Return types containing colons in Google-style docstrings
+
+
+Version 0.3.3 (2015-04-03)
+--------------------------
+
+* Adds support for "Usage" section
+
+
+Version 0.3.2 (2015-04-03)
+--------------------------
+
+* Correctly handles Return types containing colons in NumPy-style docstrings
+
+
 Version 0.3.1 (2015-02-19)
 --------------------------
 
- * Removes 2to3 from setup.py
- * Enables bdist_wheel distributions
+* Removes 2to3 from setup.py
+* Enables bdist_wheel distributions
 
 
 Version 0.3 (2015-02-19)

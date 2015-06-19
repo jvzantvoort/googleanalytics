@@ -15,9 +15,9 @@ from unittest import TestCase
 
 try:
     # Python >=3.3
-    from unittest.mock import Mock
+    from unittest import mock
 except ImportError:
-    from mock import Mock
+    import mock
 
 
 class NamedtupleSubclass(namedtuple('NamedtupleSubclass', ('attr1', 'attr2'))):
@@ -29,6 +29,9 @@ class NamedtupleSubclass(namedtuple('NamedtupleSubclass', ('attr1', 'attr2'))):
         Quick description of attr1
     attr2 : Another arbitrary type
         Quick description of attr2
+    attr3 : Type
+
+        Adds a newline after the type
 
     """
     # To avoid creating a dict, as a namedtuple doesn't have it:
@@ -48,21 +51,21 @@ class NamedtupleSubclassTest(BaseDocstringTest):
         actual = str(NumpyDocstring(cleandoc(NamedtupleSubclass.__doc__),
                      config=config, app=None, what='class',
                      name='NamedtupleSubclass', obj=NamedtupleSubclass))
-        expected = dedent("""\
-           Sample namedtuple subclass
+        expected = """\
+Sample namedtuple subclass
 
-           .. attribute:: attr1
+.. attribute:: attr1
 
-              *Arbitrary type*
+   *Arbitrary type* -- Quick description of attr1
 
-              Quick description of attr1
+.. attribute:: attr2
 
-           .. attribute:: attr2
+   *Another arbitrary type* -- Quick description of attr2
 
-              *Another arbitrary type*
+.. attribute:: attr3
 
-              Quick description of attr2
-           """)
+   *Type* -- Adds a newline after the type
+"""
 
         self.assertEqual(expected, actual)
 
@@ -94,9 +97,9 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: **arg1** (*str*) --
-                     Extended
-                     description of arg1"""
+        :Parameters: **arg1** (*str*) -- Extended
+                     description of arg1
+        """
     ), (
         """
         Single line summary
@@ -115,19 +118,16 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: * **arg1** (*str*) --
-                       Extended
+        :Parameters: * **arg1** (*str*) -- Extended
                        description of arg1
-                     * **arg2** (*int*) --
-                       Extended
+                     * **arg2** (*int*) -- Extended
                        description of arg2
 
-        :Keyword Arguments: * **kwarg1** (*str*) --
-                              Extended
+        :Keyword Arguments: * **kwarg1** (*str*) -- Extended
                               description of kwarg1
-                            * **kwarg2** (*int*) --
-                              Extended
-                              description of kwarg2"""
+                            * **kwarg2** (*int*) -- Extended
+                              description of kwarg2
+        """
     ), (
         """
         Single line summary
@@ -146,19 +146,16 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: * **arg1** (*str*) --
-                       Extended
+        :Parameters: * **arg1** (*str*) -- Extended
                        description of arg1
-                     * **arg2** (*int*) --
-                       Extended
+                     * **arg2** (*int*) -- Extended
                        description of arg2
 
-        :Keyword Arguments: * **kwarg1** (*str*) --
-                              Extended
+        :Keyword Arguments: * **kwarg1** (*str*) -- Extended
                               description of kwarg1
-                            * **kwarg2** (*int*) --
-                              Extended
-                              description of kwarg2"""
+                            * **kwarg2** (*int*) -- Extended
+                              description of kwarg2
+        """
     ), (
         """
         Single line summary
@@ -170,9 +167,9 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :returns: *str* --
-                  Extended
-                  description of return value"""
+        :returns: *str* -- Extended
+                  description of return value
+        """
     ), (
         """
         Single line summary
@@ -184,9 +181,9 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :returns: *str* --
-                  Extended
-                  description of return value"""
+        :returns: *str* -- Extended
+                  description of return value
+        """
     ), (
         """
         Single line summary
@@ -199,7 +196,8 @@ class GoogleDocstringTest(BaseDocstringTest):
         Single line summary
 
         :returns: Extended
-                  description of return value"""
+                  description of return value
+        """
     ), (
         """
         Single line summary
@@ -213,13 +211,11 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: * **arg1** (*str*) --
-                       Extended
+        :Parameters: * **arg1** (*str*) -- Extended
                        description of arg1
-                     * **\\*args** --
-                       Variable length argument list.
-                     * **\\*\\*kwargs** --
-                       Arbitrary keyword arguments."""
+                     * **\\*args** -- Variable length argument list.
+                     * **\\*\\*kwargs** -- Arbitrary keyword arguments.
+        """
     ), (
         """
         Single line summary
@@ -231,9 +227,9 @@ class GoogleDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Yields: *str* --
-                 Extended
-                 description of yielded value"""
+        :Yields: *str* -- Extended
+                 description of yielded value
+        """
     ), (
         """
         Single line summary
@@ -246,7 +242,8 @@ class GoogleDocstringTest(BaseDocstringTest):
         Single line summary
 
         :Yields: Extended
-                 description of yielded value"""
+                 description of yielded value
+        """
     )]
 
     def test_docstrings(self):
@@ -303,9 +300,7 @@ Attributes:
         expected = """\
 .. attribute:: in_attr
 
-   :class:`numpy.ndarray`
-
-   super-dooper attribute
+   :class:`numpy.ndarray` -- super-dooper attribute
 """
         self.assertEqual(expected, actual)
 
@@ -318,10 +313,250 @@ Attributes:
         expected = """\
 .. attribute:: in_attr
 
-   *numpy.ndarray*
-
-   super-dooper attribute
+   *numpy.ndarray* -- super-dooper attribute
 """
+        self.assertEqual(expected, actual)
+
+    def test_code_block_in_returns_section(self):
+        docstring = """
+Returns:
+    foobar: foo::
+
+        codecode
+        codecode
+"""
+        expected = """
+:returns: foo::
+
+              codecode
+              codecode
+:rtype: foobar
+"""
+        actual = str(GoogleDocstring(docstring))
+        self.assertEqual(expected, actual)
+
+    def test_colon_in_return_type(self):
+        docstring = """Example property.
+
+Returns:
+    :py:class:`~.module.submodule.SomeClass`: an example instance
+    if available, None if not available.
+"""
+        expected = """Example property.
+
+:returns: an example instance
+          if available, None if not available.
+:rtype: :py:class:`~.module.submodule.SomeClass`
+"""
+        actual = str(GoogleDocstring(docstring))
+        self.assertEqual(expected, actual)
+
+    def test_xrefs_in_return_type(self):
+        docstring = """Example Function
+
+Returns:
+    :class:`numpy.ndarray`: A :math:`n \\times 2` array containing
+    a bunch of math items
+"""
+        expected = """Example Function
+
+:returns: A :math:`n \\times 2` array containing
+          a bunch of math items
+:rtype: :class:`numpy.ndarray`
+"""
+        actual = str(GoogleDocstring(docstring))
+        self.assertEqual(expected, actual)
+
+    def test_raises_types(self):
+        docstrings = [("""
+Example Function
+
+Raises:
+    RuntimeError:
+        A setting wasn't specified, or was invalid.
+    ValueError:
+        Something something value error.
+
+""", """
+Example Function
+
+:raises: * :exc:`RuntimeError` -- A setting wasn't specified, or was invalid.
+         * :exc:`ValueError` -- Something something value error.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    InvalidDimensionsError
+
+""", """
+Example Function
+
+:raises: :exc:`InvalidDimensionsError`
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    Invalid Dimensions Error
+
+""", """
+Example Function
+
+:raises: Invalid Dimensions Error
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    Invalid Dimensions Error: With description
+
+""", """
+Example Function
+
+:raises: *Invalid Dimensions Error* -- With description
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    InvalidDimensionsError: If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: :exc:`InvalidDimensionsError` -- If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    Invalid Dimensions Error: If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: *Invalid Dimensions Error* -- If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    :class:`exc.InvalidDimensionsError`
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError`
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    :class:`exc.InvalidDimensionsError`: If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError` -- If the dimensions couldn't """
+                          """be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    :class:`exc.InvalidDimensionsError`: If the dimensions couldn't be parsed,
+       then a :class:`exc.InvalidDimensionsError` will be raised.
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError` -- If the dimensions couldn't """
+                          """be parsed,
+         then a :class:`exc.InvalidDimensionsError` will be raised.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    :class:`exc.InvalidDimensionsError`: If the dimensions couldn't be parsed.
+    :class:`exc.InvalidArgumentsError`: If the arguments are invalid.
+
+""", """
+Example Function
+
+:raises: * :class:`exc.InvalidDimensionsError` -- If the dimensions """
+                          """couldn't be parsed.
+         * :class:`exc.InvalidArgumentsError` -- If the arguments are invalid.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises:
+    :class:`exc.InvalidDimensionsError`
+    :class:`exc.InvalidArgumentsError`
+
+""", """
+Example Function
+
+:raises: * :class:`exc.InvalidDimensionsError`
+         * :class:`exc.InvalidArgumentsError`
+""")]
+        for docstring, expected in docstrings:
+            actual = str(GoogleDocstring(docstring))
+            self.assertEqual(expected, actual)
+
+    def test_kwargs_in_arguments(self):
+        docstring = """Allows to create attributes binded to this device.
+
+Some other paragraph.
+
+Code sample for usage::
+
+  dev.bind(loopback=Loopback)
+  dev.loopback.configure()
+
+Arguments:
+  **kwargs: name/class pairs that will create resource-managers
+    bound as instance attributes to this instance. See code
+    example above.
+"""
+        expected = """Allows to create attributes binded to this device.
+
+Some other paragraph.
+
+Code sample for usage::
+
+  dev.bind(loopback=Loopback)
+  dev.loopback.configure()
+
+:param \\*\\*kwargs: name/class pairs that will create resource-managers
+                   bound as instance attributes to this instance. See code
+                   example above.
+"""
+        actual = str(GoogleDocstring(docstring))
         self.assertEqual(expected, actual)
 
 
@@ -354,9 +589,9 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: **arg1** (*str*) --
-                     Extended
-                     description of arg1"""
+        :Parameters: **arg1** (*str*) -- Extended
+                     description of arg1
+        """
     ), (
         """
         Single line summary
@@ -382,19 +617,16 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: * **arg1** (*str*) --
-                       Extended
+        :Parameters: * **arg1** (*str*) -- Extended
                        description of arg1
-                     * **arg2** (*int*) --
-                       Extended
+                     * **arg2** (*int*) -- Extended
                        description of arg2
 
-        :Keyword Arguments: * **kwarg1** (*str*) --
-                              Extended
+        :Keyword Arguments: * **kwarg1** (*str*) -- Extended
                               description of kwarg1
-                            * **kwarg2** (*int*) --
-                              Extended
-                              description of kwarg2"""
+                            * **kwarg2** (*int*) -- Extended
+                              description of kwarg2
+        """
     ), (
         """
         Single line summary
@@ -408,9 +640,9 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :returns: *str* --
-                  Extended
-                  description of return value"""
+        :returns: *str* -- Extended
+                  description of return value
+        """
     ), (
         """
         Single line summary
@@ -424,9 +656,9 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :returns: *str* --
-                  Extended
-                  description of return value"""
+        :returns: *str* -- Extended
+                  description of return value
+        """
     ), (
         """
         Single line summary
@@ -443,12 +675,10 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Parameters: * **arg1** (*str*) --
-                       Extended description of arg1
-                     * ***args** --
-                       Variable length argument list.
-                     * ****kwargs** --
-                       Arbitrary keyword arguments."""
+        :Parameters: * **arg1** (*str*) -- Extended description of arg1
+                     * ***args** -- Variable length argument list.
+                     * ****kwargs** -- Arbitrary keyword arguments.
+        """
     ), (
         """
         Single line summary
@@ -462,9 +692,9 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Yields: *str* --
-                 Extended
-                 description of yielded value"""
+        :Yields: *str* -- Extended
+                 description of yielded value
+        """
     ), (
         """
         Single line summary
@@ -478,9 +708,9 @@ class NumpyDocstringTest(BaseDocstringTest):
         """
         Single line summary
 
-        :Yields: *str* --
-                 Extended
-                 description of yielded value"""
+        :Yields: *str* -- Extended
+                 description of yielded value
+        """
     )]
 
     def test_docstrings(self):
@@ -572,7 +802,7 @@ otherfunc : relationship
 """
 
         config = Config()
-        app = Mock()
+        app = mock.Mock()
         actual = str(NumpyDocstring(docstring, config, app, "method"))
 
         expected = """\
@@ -585,4 +815,254 @@ numpy.multivariate_normal(mean, cov, shape=None, spam=None)
    :meth:`otherfunc`
        relationship
 """
+        self.assertEqual(expected, actual)
+
+    def test_colon_in_return_type(self):
+        docstring = """
+Summary
+
+Returns
+-------
+:py:class:`~my_mod.my_class`
+    an instance of :py:class:`~my_mod.my_class`
+"""
+
+        expected = """
+Summary
+
+:returns: an instance of :py:class:`~my_mod.my_class`
+:rtype: :py:class:`~my_mod.my_class`
+"""
+
+        config = Config()
+        app = mock.Mock()
+        actual = str(NumpyDocstring(docstring, config, app, "method"))
+
+        self.assertEqual(expected, actual)
+
+    def test_underscore_in_attribute(self):
+        docstring = """
+Attributes
+----------
+
+arg_ : type
+    some description
+"""
+
+        expected = """
+:ivar arg_: some description
+:vartype arg_: type
+"""
+
+        config = Config(napoleon_use_ivar=True)
+        app = mock.Mock()
+        actual = str(NumpyDocstring(docstring, config, app, "class"))
+
+        self.assertEqual(expected, actual)
+
+    def test_raises_types(self):
+        docstrings = [("""
+Example Function
+
+Raises
+------
+  RuntimeError
+
+      A setting wasn't specified, or was invalid.
+  ValueError
+
+      Something something value error.
+
+""", """
+Example Function
+
+:raises: * :exc:`RuntimeError` -- A setting wasn't specified, or was invalid.
+         * :exc:`ValueError` -- Something something value error.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+InvalidDimensionsError
+
+""", """
+Example Function
+
+:raises: :exc:`InvalidDimensionsError`
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+Invalid Dimensions Error
+
+""", """
+Example Function
+
+:raises: Invalid Dimensions Error
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+Invalid Dimensions Error
+    With description
+
+""", """
+Example Function
+
+:raises: *Invalid Dimensions Error* -- With description
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+InvalidDimensionsError
+    If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: :exc:`InvalidDimensionsError` -- If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+Invalid Dimensions Error
+    If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: *Invalid Dimensions Error* -- If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: If the dimensions couldn't be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+:class:`exc.InvalidDimensionsError`
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError`
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+:class:`exc.InvalidDimensionsError`
+    If the dimensions couldn't be parsed.
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError` -- If the dimensions couldn't """
+                          """be parsed.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+:class:`exc.InvalidDimensionsError`
+    If the dimensions couldn't be parsed,
+    then a :class:`exc.InvalidDimensionsError` will be raised.
+
+""", """
+Example Function
+
+:raises: :class:`exc.InvalidDimensionsError` -- If the dimensions couldn't """
+                          """be parsed,
+         then a :class:`exc.InvalidDimensionsError` will be raised.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+:class:`exc.InvalidDimensionsError`
+    If the dimensions couldn't be parsed.
+:class:`exc.InvalidArgumentsError`
+    If the arguments are invalid.
+
+""", """
+Example Function
+
+:raises: * :class:`exc.InvalidDimensionsError` -- If the dimensions """
+                          """couldn't be parsed.
+         * :class:`exc.InvalidArgumentsError` -- If the arguments """
+                          """are invalid.
+"""),
+                      ################################
+                      ("""
+Example Function
+
+Raises
+------
+:class:`exc.InvalidDimensionsError`
+:class:`exc.InvalidArgumentsError`
+
+""", """
+Example Function
+
+:raises: * :class:`exc.InvalidDimensionsError`
+         * :class:`exc.InvalidArgumentsError`
+""")]
+        for docstring, expected in docstrings:
+            config = Config()
+            app = mock.Mock()
+            actual = str(NumpyDocstring(docstring, config, app, "method"))
+            self.assertEqual(expected, actual)
+
+    def test_xrefs_in_return_type(self):
+        docstring = """
+Example Function
+
+Returns
+-------
+:class:`numpy.ndarray`
+    A :math:`n \\times 2` array containing
+    a bunch of math items
+"""
+        expected = """
+Example Function
+
+:returns: A :math:`n \\times 2` array containing
+          a bunch of math items
+:rtype: :class:`numpy.ndarray`
+"""
+        config = Config()
+        app = mock.Mock()
+        actual = str(NumpyDocstring(docstring, config, app, "method"))
         self.assertEqual(expected, actual)

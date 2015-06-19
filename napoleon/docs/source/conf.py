@@ -21,14 +21,11 @@ sys.path.insert(0, basedir)
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
     html_theme = 'default'
-else:
-    html_theme = 'armstrong'
-    html_theme_path = ['_themes']
 
 # -- Options for Napoleon Extension --------------------------------------------
 
 # Parse Google style docstrings.
-# See http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+# See http://google.github.io/styleguide/pyguide.html
 napoleon_google_docstring = True
 
 # Parse NumPy style docstrings.
@@ -99,7 +96,7 @@ extensions = ['sphinx.ext.autodoc',
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+# source_suffix = '.rst'
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'

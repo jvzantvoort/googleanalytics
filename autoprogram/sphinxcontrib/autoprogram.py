@@ -8,6 +8,7 @@
     :license: BSD, see LICENSE for details.
 
 """
+# pylint: disable=protected-access,missing-docstring
 import argparse
 import collections
 try:
@@ -41,14 +42,19 @@ def scan_programs(parser, command=[]):
         if arg.option_strings:
             if isinstance(arg, (argparse._StoreAction,
                                 argparse._AppendAction)):
-                metavar = (arg.metavar or arg.dest).lower()
-                names = ['{0} <{1}>'.format(option_string, metavar)
-                         for option_string in arg.option_strings]
+                if arg.choices is None:
+                    metavar = (arg.metavar or arg.dest).lower()
+                    names = ['{0} <{1}>'.format(option_string, metavar)
+                             for option_string in arg.option_strings]
+                else:
+                    choices = '{0}'.format(','.join(arg.choices))
+                    names = ['{0} {{{1}}}'.format(option_string, choices)
+                             for option_string in arg.option_strings]
             else:
                 names = list(arg.option_strings)
             desc = (arg.help or '') % {'default': arg.default}
             options.append((names, desc))
-    yield command, options, parser.description or ''
+    yield command, options, parser.description, parser.epilog or ''
     if parser._subparsers:
         choices = parser._subparsers._actions[-1].choices.items()
         if not (hasattr(collections, 'OrderedDict') and
@@ -80,10 +86,10 @@ class AutoprogramDirective(Directive):
     def make_rst(self):
         import_name, = self.arguments
         parser = import_object(import_name or '__undefined__')
-        prog = self.options.get('prog', parser.prog)
-        for commands, options, desc in scan_programs(parser):
+        parser.prog = self.options.get('prog', parser.prog)
+        for commands, options, desc, epilog in scan_programs(parser):
             command = ' '.join(commands)
-            title = '{0} {1}'.format(prog, command).rstrip()
+            title = '{0} {1}'.format(parser.prog, command).rstrip()
             yield ''
             yield '.. program:: ' + title
             yield ''
@@ -92,11 +98,16 @@ class AutoprogramDirective(Directive):
             yield ''
             yield desc
             yield ''
+            yield parser.format_usage()
+            yield ''
             for option_strings, help_ in options:
                 yield '.. option:: {0}'.format(', '.join(option_strings))
                 yield ''
                 yield '   ' + help_.replace('\n', '   \n')
                 yield ''
+            yield ''
+            for line in epilog.splitlines():
+                yield line
 
     def run(self):
         node = nodes.section()
@@ -141,8 +152,8 @@ class ScannerTestCase(unittest.TestCase):
         programs = scan_programs(parser)
         programs = list(programs)
         self.assertEqual(1, len(programs))
-        pair, = programs
-        program, options, desc = pair
+        parser_info, = programs
+        program, options, desc, _ = parser_info
         self.assertEqual([], program)
         self.assertEqual('Process some integers.', desc)
         self.assertEqual(4, len(options))
@@ -180,7 +191,7 @@ class ScannerTestCase(unittest.TestCase):
         programs = list(programs)
         self.assertEqual(3, len(programs))
         # main
-        program, options, desc = programs[0]
+        program, options, desc, _ = programs[0]
         self.assertEqual([], program)
         self.assertEqual('Process some integers.', desc)
         self.assertEqual(1, len(options))
@@ -190,7 +201,7 @@ class ScannerTestCase(unittest.TestCase):
             options[0]
         )
         # max
-        program, options, desc = programs[1]
+        program, options, desc, _ = programs[1]
         self.assertEqual(['max'], program)
         self.assertEqual('Find the max.', desc)
         self.assertEqual(2, len(options))
@@ -202,12 +213,30 @@ class ScannerTestCase(unittest.TestCase):
             options[1]
         )
         # sum
-        program, options, desc = programs[2]
+        program, options, desc, _ = programs[2]
         self.assertEqual(['sum'], program)
         self.assertEqual('Sum the integers.', desc)
         self.assertEqual(2, len(options))
         self.assertEqual((['n'], 'An integer for the accumulator.'),
                          options[0])
+
+
+    def test_choices(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--awesomeness", choices=["meh", "awesome"])
+        program, options, desc, _ = list(scan_programs(parser))[0]
+        log_option = options[1]
+        self.assertEqual((["--awesomeness {meh,awesome}"],''), log_option)
+
+
+    def test_parse_epilog(self):
+        parser = argparse.ArgumentParser(description='Process some integers.', epilog='The integers will be processed.')
+        programs = scan_programs(parser)
+        programs = list(programs)
+        self.assertEqual(1, len(programs))
+        parser_data, = programs
+        program, options, desc, epilog = parser_data 
+        self.assertEqual('The integers will be processed.', epilog)
 
 
 class UtilTestCase(unittest.TestCase):
