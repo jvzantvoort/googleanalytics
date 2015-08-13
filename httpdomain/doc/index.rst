@@ -40,7 +40,7 @@ Additional Configuration
 
        http_headers_ignore_prefixes = ['X-']
 
-   .. versionadded:: 1.3.1
+   .. versionadded:: 1.4.0
 
 ``http_index_ignore_prefixes``
    Strips the leading segments from the endpoint paths by given list
@@ -70,7 +70,7 @@ Additional Configuration
 
        http_strict_mode = True
 
-   .. versionadded:: 1.3.1
+   .. versionadded:: 1.4.0
 
 
 Basic usage
@@ -907,13 +907,23 @@ __ https://bitbucket.org/birkenfeld/sphinx-contrib
 Changelog
 ---------
 
-Version 1.3.1
+Version 1.4.0
 `````````````
 
-To be released.
+Released on August 13, 2015.
 
 - Added :http:statuscode:`429 Too Many Requests` as a valid
   :rst:role:`http:statuscode`.  [:pull:`81` by DDBReloaded]
+- Became to not resolve references if they can't be resolved.
+  [:pull:`87` by Ken Robbins]
+- Became to preserve endpoint ordering when ``:endpoints:`` option is given.
+  [:pull:`88` by Dan Callaghan]
+- Added status codes for WebDAV.  [:pull:`92` by Ewen Cheslack-Postava]
+- Added CORS_ headers.  [:pull:`96` by Tomi Pieviläinen]
+- Now :mod:`sphinxcontrib.autohttp.flask` supports multiple paths for
+  endpoints using same HTTP method.  [:pull:`97` by Christian Felder]
+
+.. _CORS: http://www.w3.org/TR/cors/
 
 
 Version 1.3.0

@@ -41,6 +41,7 @@ List of extensions
 - actdiag: embed activity diagrams by using actdiag_
 - adadomain: an extension for Ada support (Sphinx 1.0 needed)
 - ansi: parse ANSI color sequences inside documents
+- argdoc_: automatically generate documentation for command-line arguments, descriptions, and help text
 - astah: embed diagram by using astah_
 - autoanysrc: Gather reST documentation from any source files
 - autoprogram_: documenting CLI programs
@@ -54,6 +55,7 @@ List of extensions
 - cmakedomain_: a domain for CMake_
 - coffeedomain: a domain for (auto)documenting CoffeeScript source code.
 - context: a builder for ConTeXt.
+- disqus_: embed Disqus comments in documents.
 - doxylink: Link to external Doxygen-generated HTML documentation
 - domaintools_: A tool for easy domain creation.
 - email: obfuscate email addresses
@@ -71,6 +73,7 @@ List of extensions
 - googlemaps: embed maps by using `Google Maps`_
 - httpdomain_: a domain for documenting RESTful HTTP APIs.
 - hyphenator: client-side hyphenation of HTML using hyphenator_
+- imgur_: embed Imgur images, albums, and metadata in documents.
 - inlinesyntaxhighlight_: inline syntax highlighting
 - lassodomain: a domain for documenting Lasso_ source code
 - libreoffice: an extension to include any drawing supported by LibreOffice (e.g. odg, vsd...).
@@ -107,6 +110,8 @@ List of extensions
 - zopeext: provide an ``autointerface`` directive for using `Zope interfaces`_.
 
 .. _aafigure: https://launchpad.net/aafigure
+
+.. _argdoc: http://sphinxcontrib-argdoc.readthedocs.org
 
 .. _astah: http://astah.change-vision.com/
 
@@ -198,6 +203,10 @@ List of extensions
 .. _cheader: https://pypi.python.org/pypi/sphinxcontrib-cheader
 
 .. _CFEngine 3: http://cfengine.com/
+
+.. _disqus: https://github.com/Robpol86/sphinxcontrib-disqus
+
+.. _imgur: https://github.com/Robpol86/sphinxcontrib-imgur
 
 For contributors
 ================
