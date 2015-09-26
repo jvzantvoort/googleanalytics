@@ -3,6 +3,13 @@ Changelog for DocumentedList Sphinx Extension
 =============================================
 
 
+### v0.3
+
+27-09-2015	Chintalagiri Shashank	<shashank@chintal.in>
+
+	* Added the :descend: and :spantolast: flags.
+
+
 ### v0.2
 
 07-09-2015	Chintalagiri Shashank	<shashank@chintal.in>
