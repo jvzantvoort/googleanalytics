@@ -76,7 +76,7 @@ List of extensions
 - hyphenator: client-side hyphenation of HTML using hyphenator_
 - imgur_: embed Imgur images, albums, and metadata in documents.
 - inlinesyntaxhighlight_: inline syntax highlighting
-- lassodomain: a domain for documenting Lasso_ source code
+- lassodomain_: a domain for documenting Lasso_ source code
 - libreoffice: an extension to include any drawing supported by LibreOffice (e.g. odg, vsd...).
 - lilypond: an extension inserting music scripts from Lilypond_ in PNG format.
 - makedomain_: a domain for `GNU Make`_
@@ -197,6 +197,8 @@ List of extensions
 .. _domaintools: http://bitbucket.org/klorenz/sphinxcontrib-domaintools
 
 .. _restbuilder: https://pypi.python.org/pypi/sphinxcontrib-restbuilder
+
+.. _lassodomain: https://pythonhosted.org/sphinxcontrib-lassodomain/
 
 .. _Lasso: http://www.lassosoft.com/
 
