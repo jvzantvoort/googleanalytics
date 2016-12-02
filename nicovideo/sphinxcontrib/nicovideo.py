@@ -65,8 +65,8 @@ class NicoVideoDirective(Directive):
 
     has_content = False
     required_arguments = 1
-    optional_arguments = 1
-    final_argument_whitespace = True
+    optional_arguments = 0
+    final_argument_whitespace = False
     option_spec = {
         'thumb': directives.flag,
     }
