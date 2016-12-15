@@ -13,6 +13,10 @@ from sphinxcontrib.napoleon.docstring import GoogleDocstring, NumpyDocstring
 from sphinxcontrib.napoleon._version import __version__
 assert __version__  # silence pyflakes
 
+if False:
+    # For type annotation
+    from typing import Any  # NOQA
+
 
 class Config(object):
     """Sphinx napoleon extension settings in `conf.py`.
@@ -30,6 +34,7 @@ class Config(object):
         # Napoleon settings
         napoleon_google_docstring = True
         napoleon_numpy_docstring = True
+        napoleon_include_init_with_doc = False
         napoleon_include_private_with_doc = False
         napoleon_include_special_with_doc = False
         napoleon_use_admonition_for_examples = False
@@ -47,13 +52,29 @@ class Config(object):
 
     Attributes
     ----------
-    napoleon_google_docstring : bool, defaults to True
+    napoleon_google_docstring : :obj:`bool` (Defaults to True)
         True to parse `Google style`_ docstrings. False to disable support
         for Google style docstrings.
-    napoleon_numpy_docstring : bool, defaults to True
+    napoleon_numpy_docstring : :obj:`bool` (Defaults to True)
         True to parse `NumPy style`_ docstrings. False to disable support
         for NumPy style docstrings.
-    napoleon_include_private_with_doc : bool, defaults to False
+    napoleon_include_init_with_doc : :obj:`bool` (Defaults to False)
+        True to list ``__init___`` docstrings separately from the class
+        docstring. False to fall back to Sphinx's default behavior, which
+        considers the ``__init___`` docstring as part of the class
+        documentation.
+
+        **If True**::
+
+            def __init__(self):
+                \"\"\"
+                This will be included in the docs because it has a docstring
+                \"\"\"
+
+            def __init__(self):
+                # This will NOT be included in the docs
+
+    napoleon_include_private_with_doc : :obj:`bool` (Defaults to False)
         True to include private members (like ``_membername``) with docstrings
         in the documentation. False to fall back to Sphinx's default behavior.
 
@@ -69,7 +90,7 @@ class Config(object):
                 # This will NOT be included in the docs
                 pass
 
-    napoleon_include_special_with_doc : bool, defaults to False
+    napoleon_include_special_with_doc : :obj:`bool` (Defaults to False)
         True to include special members (like ``__membername__``) with
         docstrings in the documentation. False to fall back to Sphinx's
         default behavior.
@@ -86,7 +107,7 @@ class Config(object):
                 # This will NOT be included in the docs
                 return unicode(self.__class__.__name__)
 
-    napoleon_use_admonition_for_examples : bool, defaults to False
+    napoleon_use_admonition_for_examples : :obj:`bool` (Defaults to False)
         True to use the ``.. admonition::`` directive for the **Example** and
         **Examples** sections. False to use the ``.. rubric::`` directive
         instead. One may look better than the other depending on what HTML
@@ -110,7 +131,7 @@ class Config(object):
 
             This is just a quick example
 
-    napoleon_use_admonition_for_notes : bool, defaults to False
+    napoleon_use_admonition_for_notes : :obj:`bool` (Defaults to False)
         True to use the ``.. admonition::`` directive for **Notes** sections.
         False to use the ``.. rubric::`` directive instead.
 
@@ -123,7 +144,7 @@ class Config(object):
         --------
         :attr:`napoleon_use_admonition_for_examples`
 
-    napoleon_use_admonition_for_references : bool, defaults to False
+    napoleon_use_admonition_for_references : :obj:`bool` (Defaults to False)
         True to use the ``.. admonition::`` directive for **References**
         sections. False to use the ``.. rubric::`` directive instead.
 
@@ -131,7 +152,7 @@ class Config(object):
         --------
         :attr:`napoleon_use_admonition_for_examples`
 
-    napoleon_use_ivar : bool, defaults to False
+    napoleon_use_ivar : :obj:`bool` (Defaults to False)
         True to use the ``:ivar:`` role for instance variables. False to use
         the ``.. attribute::`` directive instead.
 
@@ -155,7 +176,7 @@ class Config(object):
 
                Description of `attr1`
 
-    napoleon_use_param : bool, defaults to True
+    napoleon_use_param : :obj:`bool` (Defaults to True)
         True to use a ``:param:`` role for each function parameter. False to
         use a single ``:parameters:`` role for all the parameters.
 
@@ -182,7 +203,7 @@ class Config(object):
                          * **arg2** (*int, optional*) --
                            Description of `arg2`, defaults to 0
 
-    napoleon_use_keyword : bool, defaults to True
+    napoleon_use_keyword : :obj:`bool` (Defaults to True)
         True to use a ``:keyword:`` role for each function keyword argument.
         False to use a single ``:keyword arguments:`` role for all the
         keywords.
@@ -197,7 +218,7 @@ class Config(object):
         --------
         :attr:`napoleon_use_param`
 
-    napoleon_use_rtype : bool, defaults to True
+    napoleon_use_rtype : :obj:`bool` (Defaults to True)
         True to use the ``:rtype:`` role for the return type. False to output
         the return type inline with the description.
 
@@ -221,6 +242,7 @@ class Config(object):
     _config_values = {
         'napoleon_google_docstring': (True, 'env'),
         'napoleon_numpy_docstring': (True, 'env'),
+        'napoleon_include_init_with_doc': (False, 'env'),
         'napoleon_include_private_with_doc': (False, 'env'),
         'napoleon_include_special_with_doc': (False, 'env'),
         'napoleon_use_admonition_for_examples': (False, 'env'),
@@ -233,6 +255,7 @@ class Config(object):
     }
 
     def __init__(self, **settings):
+        # type: (Any) -> None
         for name, (default, rebuild) in iteritems(self._config_values):
             setattr(self, name, default)
         for name, value in iteritems(settings):
@@ -240,6 +263,7 @@ class Config(object):
 
 
 def setup(app):
+    # type: (Sphinx) -> Dict[unicode, Any]
     """Sphinx extension setup function.
 
     When the extension is loaded, Sphinx imports this module and executes
@@ -263,7 +287,8 @@ def setup(app):
     """
     from sphinx.application import Sphinx
     if not isinstance(app, Sphinx):
-        return  # probably called by tests
+        return  # type: ignore
+                # probably called by tests
 
     _patch_python_domain()
 
@@ -276,23 +301,28 @@ def setup(app):
 
 
 def _patch_python_domain():
-    import sphinx.domains.python
-    from sphinx.domains.python import PyTypedField
-    import sphinx.locale
-    l_ = sphinx.locale.lazy_gettext
-    for doc_field in sphinx.domains.python.PyObject.doc_field_types:
-        if doc_field.name == 'parameter':
-            doc_field.names = ('param', 'parameter', 'arg', 'argument')
-            break
-    sphinx.domains.python.PyObject.doc_field_types.append(
-        PyTypedField('keyword', label=l_('Keyword Arguments'),
-                     names=('keyword', 'kwarg', 'kwparam'),
-                     typerolename='obj', typenames=('paramtype', 'kwtype'),
-                     can_collapse=True),
-    )
+    # type: () -> None
+    try:
+        from sphinx.domains.python import PyTypedField
+    except ImportError:
+        pass
+    else:
+        import sphinx.domains.python
+        import sphinx.locale  # type: ignore
+        l_ = sphinx.locale.lazy_gettext
+        for doc_field in sphinx.domains.python.PyObject.doc_field_types:
+            if doc_field.name == 'parameter':
+                doc_field.names = ('param', 'parameter', 'arg', 'argument')
+                break
+        sphinx.domains.python.PyObject.doc_field_types.append(
+            PyTypedField('keyword', label=l_('Keyword Arguments'),
+                         names=('keyword', 'kwarg', 'kwparam'),
+                         typerolename='obj', typenames=('paramtype', 'kwtype'),
+                         can_collapse=True))
 
 
 def _process_docstring(app, what, name, obj, options, lines):
+    # type: (Sphinx, unicode, unicode, Any, Any, List[unicode]) -> None
     """Process the docstring for a given python object.
 
     Called when autodoc has read and processed a docstring. `lines` is a list
@@ -329,6 +359,7 @@ def _process_docstring(app, what, name, obj, options, lines):
 
     """
     result_lines = lines
+    docstring = None  # type: GoogleDocstring
     if app.config.napoleon_numpy_docstring:
         docstring = NumpyDocstring(result_lines, app.config, app, what, name,
                                    obj, options)
@@ -341,11 +372,14 @@ def _process_docstring(app, what, name, obj, options, lines):
 
 
 def _skip_member(app, what, name, obj, skip, options):
+    # type: (Sphinx, unicode, unicode, Any, bool, Any) -> bool
     """Determine if private and special class members are included in docs.
 
     The following settings in conf.py determine if private and special class
-    members are included in the generated documentation:
+    members or init methods are included in the generated documentation:
 
+    * ``napoleon_include_init_with_doc`` --
+      include init methods if they have docstrings
     * ``napoleon_include_private_with_doc`` --
       include private members if they have docstrings
     * ``napoleon_include_special_with_doc`` --
@@ -382,7 +416,7 @@ def _skip_member(app, what, name, obj, skip, options):
     """
     has_doc = getattr(obj, '__doc__', False)
     is_member = (what == 'class' or what == 'exception' or what == 'module')
-    if name != '__weakref__' and name != '__init__' and has_doc and is_member:
+    if name != '__weakref__' and has_doc and is_member:
         cls_is_owner = False
         if what == 'class' or what == 'exception':
             if PY2:
@@ -415,10 +449,16 @@ def _skip_member(app, what, name, obj, skip, options):
                 cls_is_owner = True
 
         if what == 'module' or cls_is_owner:
-            is_special = name.startswith('__') and name.endswith('__')
-            is_private = not is_special and name.startswith('_')
+            is_init = (name == '__init__')
+            is_special = (not is_init and name.startswith('__') and
+                          name.endswith('__'))
+            is_private = (not is_init and not is_special and
+                          name.startswith('_'))
+            inc_init = app.config.napoleon_include_init_with_doc
             inc_special = app.config.napoleon_include_special_with_doc
             inc_private = app.config.napoleon_include_private_with_doc
-            if (is_special and inc_special) or (is_private and inc_private):
+            if ((is_special and inc_special) or
+                    (is_private and inc_private) or
+                    (is_init and inc_init)):
                 return False
-    return skip
+    return None

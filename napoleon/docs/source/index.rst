@@ -58,7 +58,11 @@ source code files.
 Getting Started
 ---------------
 
-1. After `setting up Sphinx`_ to build your docs, enable napoleon in the
+1. Install the napoleon extension::
+
+       $ pip install sphinxcontrib-napoleon
+
+2. After `setting up Sphinx`_ to build your docs, enable napoleon in the
    Sphinx `conf.py` file::
 
        # conf.py
@@ -66,7 +70,7 @@ Getting Started
        # Add autodoc and napoleon to the extensions list
        extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.napoleon']
 
-2. Use `sphinx-apidoc` to build your API documentation::
+3. Use `sphinx-apidoc` to build your API documentation::
 
        $ sphinx-apidoc -f -o docs/source projectdir
 
@@ -180,10 +184,59 @@ not be mixed. Choose one style for your project and be consistent with it.
    * :ref:`example_google`
    * :ref:`example_numpy`
 
-   For Python type annotations, see `PEP 484`_.
+
+Type Annotations
+----------------
+
+`PEP 484`_ introduced a standard way to express types in Python code.
+This is an alternative to expressing types directly in docstrings.
+One benefit of expressing types according to `PEP 484`_ is that
+type checkers and IDEs can take advantage of them for static code
+analysis.
+
+Google style with Python 3 type annotations::
+
+    def func(arg1: int, arg2: str) -> bool:
+        """Summary line.
+
+        Extended description of function.
+
+        Args:
+            arg1: Description of arg1
+            arg2: Description of arg2
+
+        Returns:
+            Description of return value
+
+        """
+        return True
+
+Google style with types in docstrings::
+
+    def func(arg1, arg2):
+        """Summary line.
+
+        Extended description of function.
+
+        Args:
+            arg1 (int): Description of arg1
+            arg2 (str): Description of arg2
+
+        Returns:
+            bool: Description of return value
+
+        """
+        return True
+
+.. Note::
+   `Python 2/3 compatible annotations`_ aren't currently
+   supported by Sphinx and won't show up in the docs.
 
 .. _PEP 484:
    https://www.python.org/dev/peps/pep-0484/
+
+.. _Python 2/3 compatible annotations:
+   https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code
 
 
 Configuration

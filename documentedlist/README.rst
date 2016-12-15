@@ -2,6 +2,10 @@
 DocumentedList Sphinx Extension
 ===============================
 
+.. attention::
+        This extention has been moved to github as if version 0.4. 
+        See http://github.com/chintal/sphinxcontrib-documentedlist
+
 This file provides a Sphinx extension to convert a Python list into
 a table in the generated documentation. The intended application of
 this extension is to document the items of essentially list-like
@@ -15,7 +19,6 @@ which provides a description for the item.
 
 The following options are also included to enable slightly more complex
 use cases :
-
 
 :header: The number of columns displayed is 2 by default, with titles
     "Item" and "Description". This option allows you to add a custom
@@ -62,7 +65,7 @@ http://www.slideshare.net/doughellmann/better-documentation-through-automation-c
 Installation & Usage
 --------------------
 
-This extension is part of the sphinxcontrib repository and can be
+This extension is part of the sphinxcontrib namespace and can be
 installed from pypi :
 
     .. code-block:: bash

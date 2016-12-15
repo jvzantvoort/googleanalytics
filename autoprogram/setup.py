@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 
 # Do not change the variable name.  It's parsed by doc/conf.py script.
-version = '0.1.3'
+version = '0.1.4'
 
 requires = ['Sphinx >= 1.2', 'six']
 
@@ -26,12 +26,12 @@ setup(
     url='https://bitbucket.org/birkenfeld/sphinx-contrib',
     license='BSD',
     author='Hong Minhee',
-    author_email='minhee' '@' 'dahlia.kr',
+    author_email='\x68\x6f\x6e\x67.minhee' '@' '\x67\x6d\x61\x69\x6c.com',
     description='Documenting CLI programs',
     long_description=readme(),
     zip_safe=False,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -41,6 +41,8 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: Implementation :: Stackless',

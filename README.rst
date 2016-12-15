@@ -76,7 +76,7 @@ List of extensions
 - hyphenator: client-side hyphenation of HTML using hyphenator_
 - imgur_: embed Imgur images, albums, and metadata in documents.
 - inlinesyntaxhighlight_: inline syntax highlighting
-- lassodomain: a domain for documenting Lasso_ source code
+- lassodomain_: a domain for documenting Lasso_ source code
 - libreoffice: an extension to include any drawing supported by LibreOffice (e.g. odg, vsd...).
 - lilypond: an extension inserting music scripts from Lilypond_ in PNG format.
 - makedomain_: a domain for `GNU Make`_
@@ -106,6 +106,7 @@ List of extensions
 - sword: an extension inserting Bible verses from Sword_.
 - tikz: draw pictures with the `TikZ/PGF LaTeX package`_.
 - traclinks: create TracLinks_ to a Trac_ instance from within Sphinx
+- versioning_: Sphinx extension that allows building versioned docs for self-hosting.
 - whooshindex: whoosh indexer extension
 - youtube: embed videos from YouTube_
 - zopeext: provide an ``autointerface`` directive for using `Zope interfaces`_.
@@ -197,6 +198,8 @@ List of extensions
 
 .. _restbuilder: https://pypi.python.org/pypi/sphinxcontrib-restbuilder
 
+.. _lassodomain: https://pythonhosted.org/sphinxcontrib-lassodomain/
+
 .. _Lasso: http://www.lassosoft.com/
 
 .. _httpdomain: https://pythonhosted.org/sphinxcontrib-httpdomain/
@@ -208,6 +211,8 @@ List of extensions
 .. _disqus: https://github.com/Robpol86/sphinxcontrib-disqus
 
 .. _imgur: https://github.com/Robpol86/sphinxcontrib-imgur
+
+.. _versioning: https://github.com/Robpol86/sphinxcontrib-versioning
 
 .. _documentedlist: https://github.com/chintal/documentedlist
 

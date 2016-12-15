@@ -65,14 +65,15 @@ class NicoVideoDirective(Directive):
 
     has_content = False
     required_arguments = 1
-    optional_arguments = 1
-    final_argument_whitespace = True
+    optional_arguments = 0
+    final_argument_whitespace = False
     option_spec = {
         'thumb': directives.flag,
     }
 
     def run(self):
-        node = nicovideo(movie_id=self.arguments[0], thumb=('thumb' in self.options)) 
+        node = nicovideo(movie_id=self.arguments[0],
+                         thumb=('thumb' in self.options))
         return [node]
 
 
@@ -108,14 +109,15 @@ def depart_nicovideo_node(self, node):
     pass
 
 
-def nicovideo_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+def nicovideo_role(name, rawtext, text, lineno, inliner,
+                   options={}, content=[]):
     """Role for linking to nicovideo pages."""
     text = utils.unescape(text)
     has_explicit, title, movie_id = split_explicit_title(text)
 
     try:
         movie = NicoVideo(movie_id)
-        if has_explicit == False:
+        if has_explicit is False:
             title = movie.title
 
         ref = nodes.reference(rawtext, title, refuri=movie.url)

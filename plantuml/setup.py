@@ -4,11 +4,11 @@ from setuptools import setup, find_packages
 
 long_desc = open('README.rst').read()
 
-requires = ['Sphinx>=1.0']
+requires = ['Sphinx>=1.1']
 
 setup(
     name='sphinxcontrib-plantuml',
-    version='0.7',
+    version='0.8.1',
     url='https://bitbucket.org/birkenfeld/sphinx-contrib',
     download_url='https://pypi.python.org/pypi/sphinxcontrib-plantuml',
     license='BSD',

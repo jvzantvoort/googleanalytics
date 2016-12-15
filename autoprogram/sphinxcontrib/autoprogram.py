@@ -18,18 +18,19 @@ except ImportError:
 import functools
 import os
 import re
-import six
-import textwrap
+import sys
 import unittest
 
 from docutils import nodes
 from docutils.parsers.rst.directives import unchanged
-from docutils.statemachine import ViewList
+from docutils.statemachine import StringList, ViewList
+from six import exec_
 from sphinx.util.compat import Directive
 from sphinx.util.nodes import nested_parse_with_titles
 from sphinx.domains import std
 
-__all__ = ('BOOLEAN_OPTIONS', 'AutoprogramDirective', 'ScannerTestCase',
+__all__ = ('AutoprogramDirective',
+           'AutoprogramDirectiveTestCase', 'ScannerTestCase',
            'import_object', 'scan_programs', 'setup', 'suite')
 
 
@@ -57,7 +58,7 @@ def scan_programs(parser, command=[], maxdepth=0, depth=0):
             options.append(([name], desc))
 
     for arg in parser._actions:
-        if arg.option_strings:
+        if arg.option_strings and arg.help is not argparse.SUPPRESS:
             if isinstance(arg, (argparse._StoreAction,
                                 argparse._AppendAction)):
                 if arg.choices is None:
@@ -126,7 +127,7 @@ def import_object(import_name):
                 with open(f[0]) as fobj:
                     codestring = fobj.read()
                 foo = imp.new_module("foo")
-                six.exec_(codestring, foo.__dict__)
+                exec_(codestring, foo.__dict__)
 
                 sys.modules["foo"] = foo
                 mod = __import__("foo")
@@ -157,7 +158,10 @@ class AutoprogramDirective(Directive):
     def make_rst(self):
         import_name, = self.arguments
         parser = import_object(import_name or '__undefined__')
-        parser.prog = self.options.get('prog', parser.prog)
+        prog = self.options.get('prog')
+        if prog:
+            original_prog = parser.prog
+            parser.prog = prog
         start_command = self.options.get('start_command', '').split(' ')
         strip_usage = 'strip_usage' in self.options
         usage_codeblock = 'no_usage_codeblock' not in self.options
@@ -181,10 +185,15 @@ class AutoprogramDirective(Directive):
                 return subp
 
             parser = get_start_cmd_parser(parser)
+            if prog and parser.prog.startswith(original_prog):
+                parser.prog = parser.prog.replace(original_prog, prog, 1)
 
         for commands, options, cmd_parser in scan_programs(
             parser, maxdepth=int(self.options.get('maxdepth', 0))
         ):
+            if prog and cmd_parser.prog.startswith(original_prog):
+                cmd_parser.prog = cmd_parser.prog.replace(
+                    original_prog, prog, 1)
             title = cmd_parser.prog.rstrip()
             usage = cmd_parser.format_usage()
 
@@ -205,13 +214,15 @@ class AutoprogramDirective(Directive):
             yield title
             yield ('!' if commands else '?') * len(title)
             yield ''
-            yield cmd_parser.description or ''
+            for line in (cmd_parser.description or '').splitlines():
+                yield line
             yield ''
 
             if usage_codeblock:
                 yield '.. code-block:: console'
                 yield ''
-                yield textwrap.indent(usage, '    ')
+                for usage_line in usage.splitlines():
+                    yield '   ' + usage_line
             else:
                 yield usage
 
@@ -267,6 +278,7 @@ class ScannerTestCase(unittest.TestCase):
                             const=sum, default=max,
                             help='sum the integers (default: find the max)')
         parser.add_argument('--key-value', metavar=('KEY', 'VALUE'), nargs=2)
+        parser.add_argument('--max', help=argparse.SUPPRESS)  # must be opt-out
 
         programs = scan_programs(parser)
         programs = list(programs)
@@ -363,6 +375,27 @@ class ScannerTestCase(unittest.TestCase):
         self.assertEqual('The integers will be processed.', cmd_parser.epilog)
 
 
+class AutoprogramDirectiveTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.untouched_sys_path = sys.path[:]
+        sample_prog_path = os.path.join(os.path.dirname(__file__), '..', 'doc')
+        sys.path.insert(0, sample_prog_path)
+        self.directive = AutoprogramDirective(
+            'autoprogram', ['cli:parser'], {'prog': 'cli.py'},
+            StringList([], items=[]), 1, 0,
+            '.. autoprogram:: cli:parser\n   :prog: cli.py\n',
+            None, None
+        )
+
+    def tearDown(self):
+        sys.path[:] = self.untouched_sys_path
+
+    def test_make_rst(self):
+        """Alt least it shouldn't raise errors during making RST string."""
+        list(self.directive.make_rst())
+
+
 class UtilTestCase(unittest.TestCase):
 
     def test_import_object(self):
@@ -381,7 +414,5 @@ class UtilTestCase(unittest.TestCase):
 
 
 suite = unittest.TestSuite()
-suite.addTests(
-    unittest.defaultTestLoader.loadTestsFromTestCase(ScannerTestCase)
-)
-suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(UtilTestCase))
+for test_case in ScannerTestCase, AutoprogramDirectiveTestCase, UtilTestCase:
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(test_case))

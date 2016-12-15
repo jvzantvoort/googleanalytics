@@ -91,16 +91,18 @@ The above reStructuredText will render:
 .. _prog: http://docs.python.org/library/argparse.html#prog
 
 
+.. _autoprogram-options:
+
 Additional Options for :rst:dir:`.. autoprogram::`
 --------------------------------------------------
 
-.. versionadded:: 0.1.13
+.. versionadded:: 0.1.3
 
 ``:maxdepth: ##``
-    Only show subcommands to a depth of ``##``
+    Only show subcommands to a depth of ``##``.
 
 ``:no_usage_codeblock:``
-    Don't put the usage text in a ``.. codeblock:: console`` directive.
+    Don't put the usage text in a :rst:dir:`.. codeblock:: console` directive.
 
 ``:start_command: subcommand``
     Render document for the given subcommand. ``subcommand`` can be a space
@@ -110,6 +112,7 @@ Additional Options for :rst:dir:`.. autoprogram::`
     Removes all but the last word in the usage string before the first option,
     replaces it with '...', and removes an amount of whitespace to realign
     subsequent lines.
+
 
 Author and license
 ------------------
@@ -126,22 +129,45 @@ the repository).
    $ hg clone https://bitbucket.org/birkenfeld/sphinx-contrib
    $ cd sphinx-contrib/autoprogram/
 
-__ http://dahlia.kr/
+__ https://hongminhee.org/
 __ https://bitbucket.org/birkenfeld/sphinx-contrib
 
 
 Changelog
 ---------
 
+Version 0.1.4
+`````````````
+
+To be released.
+
+- Fixed a :rst:dir`.. autoprogram::` bug that raises :exc:`AttributeError`
+  during build without ``:no_usage_codeblock:`` option on Python 2.
+  [:issue:`168`, :issue:`169`]
+
+
 Version 0.1.3
 `````````````
 
-- Fixed crash when metavars is a tuple (ie. for ``nargs > 1``)
+Released on October 7, 2016.
+
+- Fixed a bug that descriptions with :class:`~argparse.RawTextHelpFormatter`
+  had been incorrectly formatted.  [:pull:`123` by Aaron Meurer]
+- Fixed crash when metavars is a tuple (i.e. for ``nargs > 1``).
+  [:pull:`112` by Alex Honeywell]
 - Fixed usage string for subcommands (subcommands were previously showing
-  the top-level command usage).
-- Added new options to ``.. autoprogram::``
+  the top-level command usage).  [:pull:`112` by Alex Honeywell]
+- Added :ref:`new options <autoprogram-options>` to :rst:dir:`.. autoprogram::`
+  directive:  [:pull:`112` by Alex Honeywell]
     
-    ``maxdepth``, ``no_usage_codeblock``, ``start_command``, and ``strip_usage``
+  - ``maxdepth``
+  - ``no_usage_codeblock``
+  - ``start_command``
+  - ``strip_usage``
+
+- Fixed suppressed arguments (using :const:`argparse.SUPPRESS` flag)
+  to become ignored.  [:issue:`166`]
+
 
 Version 0.1.2
 `````````````

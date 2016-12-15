@@ -217,7 +217,7 @@ class LSObject(ObjectDescription):
         objectname = self.env.ref_context.get('ls:object')
         indextext = self.get_index_text(objectname, name_obj)
         if indextext:
-            self.indexnode['entries'].append(('single', indextext, refname, ''))
+            self.indexnode['entries'].append(('single', indextext, refname, '', None))
 
     def before_content(self):
         # needed for automatic qualification of members (reset in subclasses)

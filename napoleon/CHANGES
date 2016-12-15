@@ -3,6 +3,45 @@
 This file describes user-visible changes between the extension versions.
 
 
+Version 0.6.0 (2016-11-23)
+--------------------------
+
+ * No longer prevents other 'autodoc-skip-member' handlers from running.
+   If Napoleon doesn't care if a member is skipped, then the decision is
+   deferred to autodoc and other extensions that handle 'autodoc-skip-member'.
+
+
+Version 0.5.4 (2016-11-21)
+--------------------------
+
+ * Improves param type parsing
+
+
+Version 0.5.3 (2016-08-06)
+--------------------------
+
+ * Fixes parsing of Google style parameter types that contain parenthesis
+
+
+Version 0.5.2 (2016-06-23)
+--------------------------
+
+ * Fixes issue in which monkey patching :keyword: support breaks with older
+   versions of Sphinx (at least sphinx<=1.2.3)
+
+
+Version 0.5.1 (2016-06-12)
+--------------------------
+
+ * Fixes bad formatting when a literal block is opened on the first line of a
+   parameter description
+ * Corrects minor formatting issue on example NumPy Attributes section
+ * Adds config option "napoleon_include_init_with_doc" to force inclusion
+   of standalone __init__ method in generated docs
+ * Adds config option "napoleon_use_keyword" to render keyword args with type
+   links
+
+
 Version 0.5.0 (2016-02-20)
 --------------------------
 

@@ -99,7 +99,7 @@ Quick examples
       :import: trait_horned
       :import: trait_herbivore
       :import: trait_foreach
-      :see: http://en.wikipedia.org/wiki/Rhinoceros
+      :see: https://en.wikipedia.org/wiki/Rhinoceros
 
       .. ls:member:: numberOfHorns(species::string)::integer
 
@@ -118,7 +118,7 @@ Quick examples
    :import: trait_horned
    :import: trait_herbivore
    :import: trait_foreach
-   :see: http://en.wikipedia.org/wiki/Rhinoceros
+   :see: https://en.wikipedia.org/wiki/Rhinoceros
 
    .. ls:member:: numberOfHorns(species::string)::integer
 
@@ -173,6 +173,6 @@ More Info
 *  `LassoGuide`_
 *  `LassoSoft`_
 
-.. _`Sphinx domains`: http://sphinx-doc.org/domains.html
+.. _`Sphinx domains`: http://www.sphinx-doc.org/en/stable/domains.html
 .. _`LassoGuide`: http://www.lassoguide.com/
 .. _`LassoSoft`: http://www.lassosoft.com/
