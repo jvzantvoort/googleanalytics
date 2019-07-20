@@ -4,8 +4,9 @@
 Google Analytics extension for Sphinx
 ===========================================
 
-:author: Domen Kožar <domen@dev.si>
+:original author: Domen Kožar <domen@dev.si>
 
+.. warning:: WORK IN PROGRESS, I'm messing around with this !!!!
 
 About
 =====
@@ -19,11 +20,12 @@ Installing from sphinx-contrib checkout
 
 Checkout sphinx-contrib::
 
-  $ hg clone https://bitbucket.org/birkenfeld/sphinx-contrib/
+
+  $ git clone https://github.com/jvzantvoort/googleanalytics.git
 
 Change into the googleanalytics directory::
 
-  $ cd sphinx-contrib/googleanalytics
+  $ cd googleanalytics
   
 Install the module::
 
@@ -33,10 +35,10 @@ Install the module::
 Enabling the extension in Sphinx_
 ---------------------------------
 
-Just add ``sphinxcontrib.googleanalytics`` to the list of extensions in the ``conf.py``
+Just add ``sphinxlala.googleanalytics`` to the list of extensions in the ``conf.py``
 file. For example::
 
-    extensions = ['sphinxcontrib.googleanalytics']
+    extensions = ['sphinxlala.googleanalytics']
 
 
 Configuration
